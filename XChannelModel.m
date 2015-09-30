@@ -98,30 +98,35 @@ while T <= EndTime
     % Hydraulics
     WL = SetQ(CellWidth,BedLevel,WetLastTimestep,Slope,Roughness,DryFlc,QTol,Flow);
     WetCells = (WL-BedLevel >= DryFlc) | (WetLastTimestep & (WL-BedLevel >= DryFlc / 2));
-    H = WetCells .* (WL - BedLevel);
+    H = WL - BedLevel(WetCells);
     VAvVel = H.^(2/3) * Slope^0.5 / Roughness;
-    Tau_S = Rho_W * G * VAvVel.^2 * Roughness^2 ./ H.^(1/3);
+    
+    Tau_S = zeros(NCells,1);
+    Tau_S(WetCells) = Rho_W * G * VAvVel.^2 * Roughness^2 ./ H.^(1/3);
 
     % Secondary flow
     AlphaSpiral = min(sqrt(G) ./ (Kappa * (H.^(1/6) / Roughness)), 0.5); % Equation 9.156 in Delft3D-FLOW User Manual or Eq8 Kalkwijk & Booji 1986
     SpiralIntensity = H .* VAvVel / Radius; % Eq 9.160 (I_be (intensity due to bend) only as I_ce (coriolis) is negligable)
-    Tau_N = -2 * ESpiral * Rho_W * AlphaSpiral.^2 .* (1 - AlphaSpiral / 2) .* VAvVel .* SpiralIntensity; % Eq9.145 D3D or Eq26 Kalkwijk & Booji 1986
-
+    
+    Tau_N = zeros(NCells,1);
+    Tau_N(WetCells) = -2 * ESpiral * Rho_W * AlphaSpiral.^2 .* (1 - AlphaSpiral / 2) .* VAvVel .* SpiralIntensity; % Eq9.145 D3D or Eq26 Kalkwijk & Booji 1986
     Tau_Tot = sqrt(Tau_S.^2 + Tau_N.^2);
     UStar = sqrt(Tau_Tot / Rho_W);
 
     % Sediment properties
-    ActiveCells = WL - BedLevel >= SedThr;
     Dg_phi = sum((ones(NCells,1)*D50i_phi) .* Fi, 2);
     Dg_m = 2.^-Dg_phi / 1000;
     SigmaG_phi = sqrt(sum(Fi .* ((ones(NCells,1)*D50i_phi) - (Dg_phi*ones(1,NFracs))).^2, 2));
 
     % Sediment transport due to flow
+    ActiveCells = (WL - BedLevel) >= SedThr;
     if STFormula == 1
         qsiTot_flow = WilcockCrowe(Rho_S, Rho_W, G, NCells, NFracs, D50i_m, SandFrac, Fi, Dg_m, Tau_Tot, UStar);
     end
-    qsS = sum(sum(qsiTot_flow, 2) .* (Tau_S ./ Tau_Tot)); % Total volumetric transport rate through section
+    qsiTot_flow(~ActiveCells) = 0;
+    qsS = sum(sum(qsiTot_flow(ActiveCells), 2) .* (Tau_S(ActiveCells) ./ Tau_Tot(ActiveCells))); % Total volumetric transport rate through section
     qsiN_flow = qsiTot_flow .* ((Tau_N ./ Tau_Tot) * ones(1, NFracs));
+    qsiN_flow(isnan(qsiN_flow)) = 0;
 
     if UpwindBedload % Upwind bedload
         C2E_Weights = (Tau_N(1:end-1) + Tau_N(2:end)) > 0;
