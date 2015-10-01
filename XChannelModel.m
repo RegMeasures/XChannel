@@ -54,6 +54,10 @@ ESpiral = GetInputParameter(C,'ESPIR',1); % Coefficient for effect of spiral flo
 
 UpwindBedload = GetInputParameter(C,'UPWINDBEDLOAD',1);
 
+% Outputs
+DiagInt = GetInputParameter(C,'DIAGINT',dT);
+PlotInt = GetInputParameter(C,'PLOTINT',dT);
+
 
 %% Prep the model
 
@@ -68,6 +72,7 @@ BedLevel = InitialGeometry(:,2);
 
 % Initialise hydraulics
 WetCells = ones(NCells,1);
+WL = NaN;
 
 % Initialise sediment
 if SedType == 1 % uniform sediment
@@ -85,17 +90,40 @@ if STFormula == 1
     SandFrac = D50i_m <= 0.002;
 end
 
+% Initialise morpho
+Delta_tot = zeros(NCells,1);
+Delta_i_tot = zeros(NCells,NFracs);
+
 % Initialise Time
 T = StartTime - dT;
 
+% Set up cross-section plot
+[XsFigureH, BedPlotH, WlPlotH, XsPlotTitleH] = PlotXS(CellCentrePos,CellEdgePos,InitialGeometry(:,2),BedLevel,WL,DryFlc,0);
+PlotT = StartTime;
+DiagT = StartTime;
+
 %% Main Loop
 
-while T <= EndTime
+while T < EndTime
+    
     % Move to next timestep
     T = T + dT;
     WetLastTimestep = WetCells;
     
-    % Hydraulics
+    % Update bed composition
+    if SedType == 2
+        % NEEDS MORE THOUGHT HERE ABOUT MIXING MODEL...
+        % Fi = (Fi * DA + Delta_i_tot * DT) / DA; % Could mix new sed in before moving from active to sub-surface??? Timestep sensitive?
+        SubSurfFlux_i = (max(-Delta_tot,0) * ones(1,NFracs)) .* BulkFi - ...
+                        (max(Delta_tot,0) * ones(1,NFracs)) .* Fi; % Fractional volumetric flux rate into active layer from subsurface [m3/s/m]
+        % Fi = (Fi * DA - SubSurfFlux_i) / DA;
+        Fi = (Fi * DA + (Delta_i_tot - SubSurfFlux_i) * dT) / DA;
+    end
+
+    % Update bed level
+    BedLevel = BedLevel + Delta_tot * dT / Porosity;
+    
+    % Calculate basic hydraulics
     WL = SetQ(CellWidth,BedLevel,WetLastTimestep,Slope,Roughness,DryFlc,QTol,Flow);
     WetCells = (WL-BedLevel >= DryFlc) | (WetLastTimestep & (WL-BedLevel >= DryFlc / 2));
     H = WL - BedLevel(WetCells);
@@ -104,7 +132,7 @@ while T <= EndTime
     Tau_S = zeros(NCells,1);
     Tau_S(WetCells) = Rho_W * G * VAvVel.^2 * Roughness^2 ./ H.^(1/3);
 
-    % Secondary flow
+    % Calculate secondary flow
     AlphaSpiral = min(sqrt(G) ./ (Kappa * (H.^(1/6) / Roughness)), 0.5); % Equation 9.156 in Delft3D-FLOW User Manual or Eq8 Kalkwijk & Booji 1986
     SpiralIntensity = H .* VAvVel / Radius; % Eq 9.160 (I_be (intensity due to bend) only as I_ce (coriolis) is negligable)
     
@@ -118,7 +146,7 @@ while T <= EndTime
     Dg_m = 2.^-Dg_phi / 1000;
     SigmaG_phi = sqrt(sum(Fi .* ((ones(NCells,1)*D50i_phi) - (Dg_phi*ones(1,NFracs))).^2, 2));
 
-    % Sediment transport due to flow
+    % Calculate sediment transport due to flow
     ActiveCells = (WL - BedLevel) >= SedThr;
     if STFormula == 1
         qsiTot_flow = WilcockCrowe(Rho_S, Rho_W, G, NCells, NFracs, D50i_m, SandFrac, Fi, Dg_m, Tau_Tot, UStar);
@@ -128,6 +156,7 @@ while T <= EndTime
     qsiN_flow = qsiTot_flow .* ((Tau_N ./ Tau_Tot) * ones(1, NFracs));
     qsiN_flow(isnan(qsiN_flow)) = 0;
 
+    % Calculate cell edge sediment flux rates
     if UpwindBedload % Upwind bedload
         C2E_Weights = (Tau_N(1:end-1) + Tau_N(2:end)) > 0;
     else % Central
@@ -143,23 +172,16 @@ while T <= EndTime
     Delta_i_tot = Delta_i_flow;
     Delta_tot = sum(Delta_i_tot, 2);
 
-    % Outputs here...?
-    
-    % Bed composition updating
-    if SedType == 2
-        % NEEDS MORE THOUGHT HERE ABOUT MIXING MODEL...
-        % Fi = (Fi * DA + Delta_i_tot * DT) / DA; % Could mix new sed in before moving from active to sub-surface??? Timestep sensitive?
-        SubSurfFlux_i = (max(-Delta_tot,0) * ones(1,NFracs)) .* BulkFi - ...
-                        (max(Delta_tot,0) * ones(1,NFracs)) .* Fi; % Fractional volumetric flux rate into active layer from subsurface [m3/s/m]
-        % Fi = (Fi * DA - SubSurfFlux_i) / DA;
-        Fi = (Fi * DA + (Delta_i_tot - SubSurfFlux_i) * dT) / DA;
+    % Outputs
+    if T >= PlotT + PlotInt
+        PlotT = PlotT + PlotInt;
+        UpdateXsPlot(BedPlotH, WlPlotH, XsPlotTitleH, BedLevel,WL,DryFlc,T)
     end
-
-    % Bed level updating
-    BedLevel = BedLevel + Delta_tot * dT / Porosity;
-
-    fprintf('T=%g, Q=%g\n', T, Flow)
+    if T >= DiagT + DiagInt
+        DiagT = DiagT + DiagInt;
+        fprintf('T=%gs, Q=%gm^3/s, q_s=%.2em3/s\n', T, Flow, qsS)
+    end
 end
 
-
-
+% Final outputs
+UpdateXsPlot(BedPlotH, WlPlotH, XsPlotTitleH, BedLevel,WL,DryFlc,T)

@@ -8,7 +8,7 @@ ROUGHNESS = 0.021            % [manning's n]
 RADIUS    = 10               % radius of streamline curvature[m]
 
 % Sediment
-SEDSIZE   = TestSedFrac.txt  % Either numeric D50 for single size [m], or csv file with 3 columns: fraction D50 [m], initial condition SurfaceFi [dimensionless], IC BulkFi [dimensionless]
+SEDSIZE   = .001 %TestSedFrac.txt  % Either numeric D50 for single size [m], or csv file with 3 columns: fraction D50 [m], initial condition SurfaceFi [dimensionless], IC BulkFi [dimensionless]
 RHOS      = 2650             % Sed density, either single global value or ref to to file containing fractional densities [kg/m3]
 POROSITY  = 0.4              % Porosity of bulk bed sediment [dimensionless]
 STFORMULA = 1                % Sediment transport formula:
@@ -16,9 +16,9 @@ STFORMULA = 1                % Sediment transport formula:
                              %   No other options yet
 
 % Times
-DT        = 16               % Timestep [s]
+DT        = 10               % Timestep [s]
 STARTTIME = 0                % [s] (default = 0)
-ENDTIME   = 0 %13500            % [s]
+ENDTIME   = 13500            % [s]
 
 % Constants
 RHOW      = 1000             % Fluid density [kg/m3] (default 1000)
@@ -32,4 +32,8 @@ ESPIR     = 1                % effect of spiral flow on bedload transport (defau
 
 DA        = 0.1              % Active layer thickness [m] (no effect if uniform sediment)
 SEDTHR    = 0.001            % Threshold depth for sediment transport [m] (default = 2*DRYFLC)
-UPWINDBEDLOAD = 1            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central
+UPWINDBEDLOAD = 0            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central
+
+% Outputs
+DIAGINT   = 60               % Diagnostics update interval [s] (default = DT)
+PLOTINT   = 60               % Plot update interval [s] (default = DT)
