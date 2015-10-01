@@ -29,7 +29,18 @@ Radius = GetInputParameter(C,'RADIUS');
 [SedSize, SedType] = GetInputParameter(C,'SEDSIZE');
 Rho_S = GetInputParameter(C,'RHOS',2650);
 Porosity = GetInputParameter(C,'POROSITY',0.4);
-STFormula = GetInputParameter(C,'STFORMULA','WC');
+STFormula = GetInputParameter(C,'STFORMULA',1);
+BedSlopeFormula = GetInputParameter(C,'BEDSLOPE',0);
+switch BedSlopeFormula
+    case 0
+        fprintf('No bed slope formulation being used')
+    case 1
+        fprintf('Talmon et al (1995) bed slope calculation')
+        A_sh = GetInputParameter(C,'ASH',9);
+        B_sh = GetInputParameter(C,'BSH',0.5);
+        C_sh = GetInputParameter(C,'CSH',0.3);
+        D_sh = GetInputParameter(C,'DSH',0);
+end
 
 % Times
 dT = GetInputParameter(C,'DT');
@@ -38,7 +49,7 @@ EndTime = GetInputParameter(C,'ENDTIME');
 
 % Constants
 Rho_W = GetInputParameter(C,'RHOW',1000);
-G = GetInputParameter(C,'GRAVITY',9.81);
+g = GetInputParameter(C,'GRAVITY',9.81);
 Kappa = GetInputParameter(C,'KAPPA',0.4);
 
 % Advanced parameters
@@ -76,18 +87,18 @@ WL = NaN;
 
 % Initialise sediment
 if SedType == 1 % uniform sediment
-    D50i_m = SedSize;
+    Di_m = SedSize;
     Fi = ones(NCells,1);
     BulkFi = Fi;
 elseif SedType == 2 % graded sediment
-    D50i_m = SedSize(:,1)';
+    Di_m = SedSize(:,1)';
     Fi = ones(NCells,1) * SedSize(:,2)';
     BulkFi = ones(NCells,1) * SedSize(:,3)';
 end
-NFracs = size(D50i_m,2);
-D50i_phi = -log2(D50i_m * 1000);
+NFracs = size(Di_m,2);
+Di_phi = -log2(Di_m * 1000);
 if STFormula == 1
-    SandFrac = D50i_m <= 0.002;
+    SandFrac = Di_m <= 0.002;
 end
 
 % Initialise morpho
@@ -126,15 +137,17 @@ while T < EndTime
     % Calculate basic hydraulics
     WL = SetQ(CellWidth,BedLevel,WetLastTimestep,Slope,Roughness,DryFlc,QTol,Flow);
     WetCells = (WL-BedLevel >= DryFlc) | (WetLastTimestep & (WL-BedLevel >= DryFlc / 2));
-    H = WL - BedLevel(WetCells);
-    VAvVel = H.^(2/3) * Slope^0.5 / Roughness;
+    H_wet = WL - BedLevel(WetCells);
+    H = zeros(NCells,1);
+    H(WetCells) = H_wet;
+    VAvVel = H_wet.^(2/3) * Slope^0.5 / Roughness;
     
     Tau_S = zeros(NCells,1);
-    Tau_S(WetCells) = Rho_W * G * VAvVel.^2 * Roughness^2 ./ H.^(1/3);
+    Tau_S(WetCells) = Rho_W * g * VAvVel.^2 * Roughness^2 ./ H_wet.^(1/3);
 
     % Calculate secondary flow
-    AlphaSpiral = min(sqrt(G) ./ (Kappa * (H.^(1/6) / Roughness)), 0.5); % Equation 9.156 in Delft3D-FLOW User Manual or Eq8 Kalkwijk & Booji 1986
-    SpiralIntensity = H .* VAvVel / Radius; % Eq 9.160 (I_be (intensity due to bend) only as I_ce (coriolis) is negligable)
+    AlphaSpiral = min(sqrt(g) ./ (Kappa * (H_wet.^(1/6) / Roughness)), 0.5); % Equation 9.156 in Delft3D-FLOW User Manual or Eq8 Kalkwijk & Booji 1986
+    SpiralIntensity = H_wet .* VAvVel / Radius; % Eq 9.160 (I_be (intensity due to bend) only as I_ce (coriolis) is negligable)
     
     Tau_N = zeros(NCells,1);
     Tau_N(WetCells) = -2 * ESpiral * Rho_W * AlphaSpiral.^2 .* (1 - AlphaSpiral / 2) .* VAvVel .* SpiralIntensity; % Eq9.145 D3D or Eq26 Kalkwijk & Booji 1986
@@ -142,34 +155,62 @@ while T < EndTime
     UStar = sqrt(Tau_Tot / Rho_W);
 
     % Sediment properties
-    Dg_phi = sum((ones(NCells,1)*D50i_phi) .* Fi, 2);
+    Dg_phi = sum((ones(NCells,1)*Di_phi) .* Fi, 2);
     Dg_m = 2.^-Dg_phi / 1000;
-    SigmaG_phi = sqrt(sum(Fi .* ((ones(NCells,1)*D50i_phi) - (Dg_phi*ones(1,NFracs))).^2, 2));
+    SigmaG_phi = sqrt(sum(Fi .* ((ones(NCells,1)*Di_phi) - (Dg_phi*ones(1,NFracs))).^2, 2));
 
-    % Calculate sediment transport due to flow
+    % Calculate voumetric sediment transport due to flow (in cell centres)
     ActiveCells = (WL - BedLevel) >= SedThr;
+    ActiveEdges = [0; ActiveCells(1:end-1) .* ActiveCells(2:end); 0];
     if STFormula == 1
-        qsiTot_flow = WilcockCrowe(Rho_S, Rho_W, G, NCells, NFracs, D50i_m, SandFrac, Fi, Dg_m, Tau_Tot, UStar);
+        qsiTot_flow = WilcockCrowe(Rho_S, Rho_W, g, NCells, NFracs, Di_m, SandFrac, Fi, Dg_m, Tau_Tot, UStar);
     end
     qsiTot_flow(~ActiveCells) = 0;
     qsS = sum(sum(qsiTot_flow(ActiveCells), 2) .* (Tau_S(ActiveCells) ./ Tau_Tot(ActiveCells))); % Total volumetric transport rate through section
     qsiN_flow = qsiTot_flow .* ((Tau_N ./ Tau_Tot) * ones(1, NFracs));
     qsiN_flow(isnan(qsiN_flow)) = 0;
 
-    % Calculate cell edge sediment flux rates
+    % Calculate cell edge parameters
     if UpwindBedload % Upwind bedload
         C2E_Weights = (Tau_N(1:end-1) + Tau_N(2:end)) > 0;
     else % Central
         C2E_Weights = 0.5 * ones(NCells - 1, 1);
     end
-
-    qsiN_flow_edges = [zeros(1,NFracs) ;
-                       qsiN_flow(1:end-1,:) .* (C2E_Weights*ones(1, NFracs)) + qsiN_flow(2:end,:) .* (1-(C2E_Weights*ones(1, NFracs))); 
-                       zeros(1,NFracs)];
-
+    
+    qsiTot_flow_edges = Centre2Edge(qsiTot_flow, C2E_Weights);
+    qsiTot_flow_edges(~ActiveEdges,:) = 0;
+    qsiN_flow_edges = Centre2Edge(qsiN_flow, C2E_Weights);
+    qsiN_flow_edges(~ActiveEdges,:) = 0;
+    H_edges = Centre2Edge(H, C2E_Weights);
+    Tau_Tot_edges = Centre2Edge(Tau_Tot, C2E_Weights);
+    Dg_m_edges = Centre2Edge(Dg_m, C2E_Weights);
+    
+    % Calculate sediment transport due to bed slope
+    CellSlope = [0; (BedLevel(2:end) - BedLevel(1:end-1)) ./ (CellCentrePos(2:end) - CellCentrePos(1:end-1)); 0];
+    % Note: at the moment, for the purposes of slope analysis we are
+    %       assuming unadjusted bedload transport vector is normal to
+    %       cross-section and that downstream slope << transverse slope
+    %       (i.e. secondary flow neglected, downstream slope neglected for 
+    %       bed slope calc). 
+    switch BedSlopeFormula
+        case 0
+            qsiN_slope_edges = zeros(NCells+1, NFracs);
+        case 1
+            
+            ShieldsStressi_edges = (Tau_Tot_edges * ones(1, NFracs)) ./ ((Rho_S - Rho_W) * g * (ones(NCells + 1, 1) * Di_m));
+            fTheta = A_sh * ShieldsStressi_edges.^B_sh .* ...
+                     (((ones(NCells+1, 1) * Di_m)) ./ (H_edges * ones(1, NFracs))).^C_sh .* ...
+                     ((ones(NCells+1,1) * Di_m) ./ (Dg_m_edges * ones(1,NFracs))).^D_sh;
+            qsiN_slope_edges = - qsiTot_flow_edges .* (1 ./ fTheta) .* (CellSlope * ones(1, NFracs));
+            qsiN_slope_edges(isnan(qsiN_slope_edges)) = 0;
+    end
+    
+    % Calculate sediment flux rate due to bank erosion
+    
     % Erosion/deposition
     Delta_i_flow = qsiN_flow_edges(1:end-1,:) - qsiN_flow_edges(2:end,:); % Fractional volumetric flux rate into cell from neighboring cells due to flow [m3/s/m]
-    Delta_i_tot = Delta_i_flow;
+    Delta_i_slope = qsiN_slope_edges(1:end-1,:) - qsiN_slope_edges(2:end,:);
+    Delta_i_tot = Delta_i_flow + Delta_i_slope;
     Delta_tot = sum(Delta_i_tot, 2);
 
     % Outputs
