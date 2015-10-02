@@ -17,6 +17,10 @@ STFORMULA = 1                % Sediment transport formula:
 BEDSLOPE  = 1                % Bed slope formulation (default = 0)
                              %   0 = No Bed slope formulation
                              %   1 = Talmon et al 1995 bed slope formulation
+ASH       = 9                % Parameter for Talmon et al bed slope formulation (default = 9)
+BSH       = 0.5              % Parameter for Talmon et al bed slope formulation (default = 0.5)
+CSH       = 0.3              % Parameter for Talmon et al bed slope formulation (default = 0.3)
+DSH       = 0.7              % Parameter for Talmon et al bed slope formulation (default = 0.7)
 
 % Times
 DT        = 10               % Timestep [s]
