@@ -1,46 +1,49 @@
 %% Test model
 
-% Hydraulics
+%% Hydraulics
 GEOMETRY  = TestGeometry.txt % CSV file with 2 columns: Cell centre position [m], Cell centre elevation [m] (no headers)
 FLOW      = 0.0119           % [m3/s]
 SLOPE     = 0.006            % [m/m]
 ROUGHNESS = 0.021            % [manning's n]
 RADIUS    = 10               % radius of streamline curvature[m]
+DRYFLC    = 0.0              % Theshold depth for wetting [m] (default = 0, drying occurs at DRYFLC/2)
+QTOL      = 0.00000001       % Tolerance for model flow vs desired flow when setting water level [m3/s]
+KAPPA     = 0.41             % Von Karman Constant (default = 0.4)
+RHOW      = 1000             % Fluid density [kg/m3] (default 1000)
+GRAVITY   = 9.81             % Gravitational constant [m/s2] (default = 9.81)
 
-% Sediment
+%% Sediment
 SEDSIZE   = TestSedFrac.txt  % Either numeric D50 for single size [m], or csv file with 3 columns: fraction D50 [m], initial condition SurfaceFi [dimensionless], IC BulkFi [dimensionless]
 RHOS      = 2650             % Sed density, either single global value or ref to to file containing fractional densities [kg/m3]
 POROSITY  = 0.4              % Porosity of bulk bed sediment [dimensionless]
+DA        = 0.1              % Active layer thickness [m] (no effect if uniform sediment)
+SEDTHR    = 0.001            % Threshold depth for sediment transport [m] (default = 2*DRYFLC)
+
+%% Options
+UPWINDBEDLOAD = 1            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central
+ESPIR     = 1                % effect of spiral flow on bedload transport (default = 1)
 STFORMULA = 1                % Sediment transport formula:
                              %   1 = Wilcock and Crowe
                              %   No other options yet
 BEDSLOPE  = 1                % Bed slope formulation (default = 0)
-                             %   0 = No Bed slope formulation
+                             %   0 = No bed slope formulation
                              %   1 = Talmon et al 1995 bed slope formulation
 ASH       = 9                % Parameter for Talmon et al bed slope formulation (default = 9)
 BSH       = 0.5              % Parameter for Talmon et al bed slope formulation (default = 0.5)
 CSH       = 0.3              % Parameter for Talmon et al bed slope formulation (default = 0.3)
 DSH       = 0.7              % Parameter for Talmon et al bed slope formulation (default = 0.7)
+BANKID    = 1                % Bank identification approach (default = 0)
+                             %   0 = No bank ID (i.e. everywhere is a bank)
+                             %   1 = Wet/dry interface
+                             %   2 = Transporting/non-transporting
+                             %   3 = Bank height
+% BHEIGHT =                  % Bank height threshold [m] (for Bank ID approach 3)
 
-% Times
+%% Times
 DT        = 10               % Timestep [s]
 STARTTIME = 0                % [s] (default = 0)
 ENDTIME   = 13500            % [s]
 
-% Constants
-RHOW      = 1000             % Fluid density [kg/m3] (default 1000)
-GRAVITY   = 9.81             % Gravitational constant [m/s2] (default = 9.81)
-KAPPA     = 0.41             % Von Karman Constant (default = 0.4)
-
-% Numerics
-DRYFLC    = 0.0              % Theshold depth for wetting [m] (drying occurs at DRYFLC/2)
-QTOL      = 0.00000001       % Tolerance for model flow vs desired flow when setting water level [m3/s]
-ESPIR     = 1                % effect of spiral flow on bedload transport (default = 1)
-
-DA        = 0.1              % Active layer thickness [m] (no effect if uniform sediment)
-SEDTHR    = 0.001            % Threshold depth for sediment transport [m] (default = 2*DRYFLC)
-UPWINDBEDLOAD = 1            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central
-
-% Outputs
+%% Outputs
 DIAGINT   = 60               % Diagnostics update interval [s] (default = DT)
 PLOTINT   = 60               % Plot update interval [s] (default = DT)
