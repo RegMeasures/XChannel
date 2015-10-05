@@ -70,6 +70,9 @@ switch Inputs.Opt.Bank.ID.Approach
     case 3
         fprintf('Bank height bank identification approach being used')
         Inputs.Opt.Bank.ID.BHeight = GetInputParameter(C,'BHEIGHT');
+    case 4
+        fprintf('Bank slope bank identification approach being used')
+        Inputs.Opt.Bank.ID.BSlope = GetInputParameter(C,'BSLOPE');
 end
 
 % Times
