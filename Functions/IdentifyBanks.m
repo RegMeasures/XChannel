@@ -18,7 +18,7 @@ switch Options.Approach
         IsBank = (BankHeight >= Options.BHeight) - (BankHeight <= -Options.BHeight);
     case 4
         % Bank slope bank identification approach
-        IsBank = Edge.Slope(2:end-1) >= Options.BSlope;
+        IsBank = (Edge.Slope(2:end-1) <= -Options.BSlope) - (Edge.Slope(2:end-1) >= Options.BSlope);
 end
 
 % Pad with zeros to indicate no bank erosion at section ends

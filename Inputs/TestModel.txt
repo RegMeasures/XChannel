@@ -26,6 +26,7 @@ STFORMULA = 1                % Sediment transport formula:
                              %   1 = Wilcock and Crowe
                              %   No other options yet
 
+% Transverse bed slope effects on sediment transport
 BEDSLOPE  = 1                % Bed slope formulation (default = 0)
                              %   0 = No bed slope formulation
                              %   1 = Talmon et al 1995 bed slope formulation
@@ -34,14 +35,28 @@ BSH       = 0.5              % Parameter for Talmon et al bed slope formulation 
 CSH       = 0.3              % Parameter for Talmon et al bed slope formulation (default = 0.3)
 DSH       = 0.7              % Parameter for Talmon et al bed slope formulation (default = 0.7)
 
-BANKID    = 3                % Bank identification approach (default = 0)
+% Bank identification
+BANKID    = 4                % Bank identification approach (default = 0)
                              %   0 = No bank ID (i.e. everywhere is a bank)
                              %   1 = Wet/dry interface
                              %   2 = Transporting/non-transporting
                              %   3 = Bank height
                              %   4 = Bank slope
-% BHEIGHT =                    % Bank height threshold [m] (for Bank ID approach 3)
-% BSLOPE =                     % Bank slope threshold [m/m] (for Bank ID approach 4)
+% BHEIGHT   =                  % Bank height threshold [m] (for Bank ID approach 3)
+BSLOPE    = 1                % Bank slope threshold [m/m] (for Bank ID approach 4)
+
+% Bank erosion stencil
+BANKTOP   = 0                % Stencil for locating bank top cell (default = 0)
+                             %   0 = Adjacent cell (no stencil)
+BANKBOT   = 0                % Stencil for locating bank bottom cell (default = 0)
+                             %   0 = Adjacent cell (no stencil)
+
+% Bank erosion flux calculation
+BANKFLUX  = 1                % Bank erosion flux calculation approach (default = 0)
+                             %   0 = No Bank erosion flux
+                             %   1 = Limiting slope
+REPOSE    = 1                % Limiting slope [m/m] (for bank flux approach 1)
+SlIPRATIO = 1                % Proportion of excess material slipped per timestep [0-1] (default = 1, for bank flux approach 1)
 
 %% =============================== Times ==================================
 DT        = 10               % Timestep [s]

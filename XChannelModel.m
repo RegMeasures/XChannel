@@ -12,6 +12,7 @@ addpath('Functions')
 
 % Initialise geometry
 Cell.NCells = size(Inputs.Hyd.InitialGeometry,1);
+Edge.NEdges = Cell.NCells + 1;
 Cell.N = Inputs.Hyd.InitialGeometry(:,1);
 Edge.N = [Cell.N(1) - (Cell.N(2) - Cell.N(1)) / 2;
                (Cell.N(1:end-1) + Cell.N(2:end)) / 2;
@@ -32,7 +33,7 @@ elseif Inputs.Sed.SedType == 2 % graded sediment
     Cell.Fi = ones(Cell.NCells,1) * Inputs.Sed.SedSize(:,2)';
     Cell.BulkFi = ones(Cell.NCells,1) * Inputs.Sed.SedSize(:,3)';
 end
-NFracs = size(Frac.Di_m,2);
+Frac.NFracs = size(Frac.Di_m,2);
 Frac.Di_phi = -log2(Frac.Di_m * 1000);
 if Inputs.Opt.ST.Formula == 1
     Frac.SandFrac = Frac.Di_m <= 0.002;
@@ -41,7 +42,7 @@ Cell.SubDg_m = 2.^-sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.BulkFi, 2) ./10
 
 % Initialise morpho
 Cell.Delta_tot = zeros(Cell.NCells,1);
-Cell.Delta_i_tot = zeros(Cell.NCells,NFracs);
+Cell.Delta_i_tot = zeros(Cell.NCells,Frac.NFracs);
 
 % Initialise Time
 T = Inputs.Time.StartTime - Inputs.Time.dT;
@@ -65,8 +66,8 @@ while T < Inputs.Time.EndTime
     if Inputs.Sed.SedType == 2
         % NEEDS MORE THOUGHT HERE ABOUT MIXING MODEL...
         % Fi = (Fi * DA + Delta_i_tot * DT) / DA; % Could mix new sed in before moving from active to sub-surface??? Timestep sensitive?
-        Cell.SubSurfFlux_i = (max(-Cell.Delta_tot,0) * ones(1,NFracs)) .* Cell.BulkFi - ...
-                        (max(Cell.Delta_tot,0) * ones(1,NFracs)) .* Cell.Fi; % Fractional volumetric flux rate into active layer from subsurface [m3/s/m]
+        Cell.SubSurfFlux_i = (max(-Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.BulkFi - ...
+                        (max(Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.Fi; % Fractional volumetric flux rate into active layer from subsurface [m3/s/m]
         % Fi = (Fi * DA - SubSurfFlux_i) / DA;
         Cell.Fi = (Cell.Fi * Inputs.Sed.DA + (Cell.Delta_i_tot - Cell.SubSurfFlux_i) * Inputs.Time.dT) / Inputs.Sed.DA;
     end
@@ -100,18 +101,18 @@ while T < Inputs.Time.EndTime
     % Sediment properties
     Cell.Dg_phi = sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.Fi, 2);
     Cell.Dg_m = 2.^-Cell.Dg_phi ./ 1000;
-    Cell.SigmaG_phi = sqrt(sum(Cell.Fi .* ((ones(Cell.NCells,1)*Frac.Di_phi) - (Cell.Dg_phi*ones(1,NFracs))).^2, 2));
+    Cell.SigmaG_phi = sqrt(sum(Cell.Fi .* ((ones(Cell.NCells,1)*Frac.Di_phi) - (Cell.Dg_phi*ones(1,Frac.NFracs))).^2, 2));
 
     % Calculate voumetric sediment transport due to flow (in cell centres)
     Cell.Active = (WL - Cell.Z) >= Inputs.Sed.SedThr;
     Edge.Active = [0; Cell.Active(1:end-1) .* Cell.Active(2:end); 0];
     if Inputs.Opt.ST.Formula == 1
-        Cell.qsiTot_flow = WilcockCrowe(Inputs.Sed.Rho_S, Inputs.Hyd.Rho_W, Inputs.Hyd.g, Cell.NCells, NFracs, Frac.Di_m, Frac.SandFrac, Cell.Fi, Cell.Dg_m, Cell.Tau_Tot, Cell.UStar);
+        Cell.qsiTot_flow = WilcockCrowe(Inputs.Sed.Rho_S, Inputs.Hyd.Rho_W, Inputs.Hyd.g, Cell.NCells, Frac.NFracs, Frac.Di_m, Frac.SandFrac, Cell.Fi, Cell.Dg_m, Cell.Tau_Tot, Cell.UStar);
     end
     Cell.qsiTot_flow(~Cell.Active) = 0;
     Cell.qsS_flow_kg = zeros(Cell.NCells,1);
     Cell.qsS_flow_kg(Cell.Active) = Inputs.Sed.Rho_S * sum(Cell.qsiTot_flow(Cell.Active), 2) .* (Cell.Tau_S(Cell.Active) ./ Cell.Tau_Tot(Cell.Active)); % Streamwise mass transport rate [kg/s/m]
-    Cell.qsiN_flow = Cell.qsiTot_flow .* ((Cell.Tau_N ./ Cell.Tau_Tot) * ones(1, NFracs));
+    Cell.qsiN_flow = Cell.qsiTot_flow .* ((Cell.Tau_N ./ Cell.Tau_Tot) * ones(1, Frac.NFracs));
     Cell.qsiN_flow(isnan(Cell.qsiN_flow)) = 0;
 
     % Calculate cell edge parameters
@@ -139,14 +140,14 @@ while T < Inputs.Time.EndTime
     switch Inputs.Opt.Slope.Formula
         case 0
             % No bed slope influence on transport
-            Edge.qsiN_slope = zeros(Cell.NCells+1, NFracs);
+            Edge.qsiN_slope = zeros(Edge.NEdges, Frac.NFracs);
         case 1
             % Talmon et al 1995
-            Edge.ShieldsStressi = (Edge.Tau_Tot * ones(1, NFracs)) ./ ((Inputs.Sed.Rho_S - Inputs.Hyd.Rho_W) * Inputs.Hyd.g * (ones(Cell.NCells + 1, 1) * Frac.Di_m));
+            Edge.ShieldsStressi = (Edge.Tau_Tot * ones(1, Frac.NFracs)) ./ ((Inputs.Sed.Rho_S - Inputs.Hyd.Rho_W) * Inputs.Hyd.g * (ones(Edge.NEdges, 1) * Frac.Di_m));
             Edge.fTheta = Inputs.Opt.Slope.A_sh * Edge.ShieldsStressi.^Inputs.Opt.Slope.B_sh .* ...
-                     (((ones(Cell.NCells+1, 1) * Frac.Di_m)) ./ (Edge.H * ones(1, NFracs))).^Inputs.Opt.Slope.C_sh .* ...
-                     ((ones(Cell.NCells+1,1) * Frac.Di_m) ./ (Edge.Dg_m * ones(1,NFracs))).^Inputs.Opt.Slope.D_sh;
-            Edge.qsiN_slope = - Edge.qsiTot_flow .* (1 ./ Edge.fTheta) .* (Edge.Slope * ones(1, NFracs));
+                     (((ones(Edge.NEdges, 1) * Frac.Di_m)) ./ (Edge.H * ones(1, Frac.NFracs))).^Inputs.Opt.Slope.C_sh .* ...
+                     ((ones(Edge.NEdges,1) * Frac.Di_m) ./ (Edge.Dg_m * ones(1,Frac.NFracs))).^Inputs.Opt.Slope.D_sh;
+            Edge.qsiN_slope = - Edge.qsiTot_flow .* (1 ./ Edge.fTheta) .* (Edge.Slope * ones(1, Frac.NFracs));
             Edge.qsiN_slope(isnan(Edge.qsiN_slope)) = 0;
     end
     
@@ -154,13 +155,16 @@ while T < Inputs.Time.EndTime
     % Identify banks
     Edge.IsBank = IdentifyBanks(Inputs.Opt.Bank.ID, Cell, Edge);
     
+    % Apply bank erosion stencil
+    Bank = BankStencil(Inputs.Opt.Bank.Stencil, Cell, Edge);
+    
     % Calculate flux
-    %Edge.qsiN_bank = 
+    Cell.Delta_i_bank = BankFlux(Inputs.Opt.Bank.Flux, Cell, Edge, Frac, Inputs.Time.dT, Bank);
     
     % Erosion/deposition
     Cell.Delta_i_flow = Edge.qsiN_flow(1:end-1,:) - Edge.qsiN_flow(2:end,:); % Fractional volumetric flux rate into cell from neighboring cells due to flow [m3/s/m]
     Cell.Delta_i_slope = Edge.qsiN_slope(1:end-1,:) - Edge.qsiN_slope(2:end,:);
-    Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope;
+    Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope + Cell.Delta_i_bank;
     Cell.Delta_tot = sum(Cell.Delta_i_tot, 2);
 
     % Outputs
