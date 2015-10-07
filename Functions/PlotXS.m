@@ -33,14 +33,16 @@ BankIDPlotY = [Cell.Z(IsBank(1:end-1))',NaN;
 BankIDPlotY = BankIDPlotY(:);
 XsFigure.BankIDLineH = plot(BankIDPlotX, BankIDPlotY, 'r-','LineWidth',2);
 StencilPlotX = [Cell.N(Bank.Top)',NaN;
+                Edge.N(IsBank)',NaN;
                 Cell.N(Bank.Bottom)',NaN;
                 NaN(1,Bank.NBanks+1)];
 StencilPlotX = StencilPlotX(:);
 StencilPlotY = [Cell.Z(Bank.Top)',NaN;
+                (Cell.Z(IsBank(1:end-1)) + Cell.Z(IsBank(2:end)))' ./2,NaN;
                 Cell.Z(Bank.Bottom)',NaN;
                 NaN(1,Bank.NBanks+1)];
 StencilPlotY = StencilPlotY(:);
-XsFigure.BankStencilH = plot(StencilPlotX, StencilPlotY, 'r:');
+XsFigure.BankStencilH = plot(StencilPlotX, StencilPlotY, 'ro:');
 
 % Labels and formatting etc
 set(XsFigure.XsAxesH,'XTickLabel','')

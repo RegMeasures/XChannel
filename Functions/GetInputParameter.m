@@ -2,7 +2,7 @@ function [ParValue,ParType] = GetInputParameter(C,ParName,varargin)
 % Extract desired parameter from cell array of parameters
 % [ParValue,ParType] = GetInputParameter(C,ParName,Default[optional])
 
-RawPar = cell2mat(C{2}(strcmp(C{1}, ParName)));
+RawPar = cell2mat(C{2}(strcmpi(C{1}, ParName)));
 
 if isempty(RawPar)
     % the parameter is missing

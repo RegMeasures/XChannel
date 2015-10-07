@@ -114,6 +114,10 @@ while T < Inputs.Time.EndTime
             Edge.qsiN_slope(isnan(Edge.qsiN_slope)) = 0;
     end
     
+    % Erosion/deposition due to flow and associated effects (i.e. everything except bank erosion)
+    Cell.Delta_i_flow = Edge.qsiN_flow(1:end-1,:) - Edge.qsiN_flow(2:end,:); % Fractional volumetric flux rate into cell from neighboring cells due to flow [m3/s/m]
+    Cell.Delta_i_slope = Edge.qsiN_slope(1:end-1,:) - Edge.qsiN_slope(2:end,:);
+    
     % Calculate sediment flux rate due to bank erosion
     % Identify banks
     Edge.IsBank = IdentifyBanks(Inputs.Opt.Bank.ID, Cell, Edge);
@@ -123,13 +127,9 @@ while T < Inputs.Time.EndTime
     
     % Calculate flux
     Cell.Delta_i_bank = BankFlux(Inputs.Opt.Bank.Flux, Cell, Edge, Frac, Inputs.Time.dT, Bank);
-    
-    % Erosion/deposition
-    Cell.Delta_i_flow = Edge.qsiN_flow(1:end-1,:) - Edge.qsiN_flow(2:end,:); % Fractional volumetric flux rate into cell from neighboring cells due to flow [m3/s/m]
-    Cell.Delta_i_slope = Edge.qsiN_slope(1:end-1,:) - Edge.qsiN_slope(2:end,:);
     Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope + Cell.Delta_i_bank;
-    Cell.Delta_tot = sum(Cell.Delta_i_tot, 2);
-
+    Cell.Delta_tot = sum(Cell.Delta_i_tot, 2); % total volumetric flux rate into cell from neighboring cells [m3/s/m]
+    
     % Outputs
     if T >= PlotT + Inputs.Outputs.PlotInt
         PlotT = PlotT + Inputs.Outputs.PlotInt;
