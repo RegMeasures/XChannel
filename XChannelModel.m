@@ -8,53 +8,16 @@ addpath('Functions')
 %% Read model data and options from intput file
 [Inputs] = ReadModelInputs('TestModel.txt','C:\Projects\Research\BankErosionMatlab\Trunk\Inputs\');
 
-%% Prep the model
+%% Initialise the main variable structs
+[Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs);
 
-% Initialise geometry
-Cell.NCells = size(Inputs.Hyd.InitialGeometry,1);
-Edge.NEdges = Cell.NCells + 1;
-Cell.N = Inputs.Hyd.InitialGeometry(:,1);
-Edge.N = [Cell.N(1) - (Cell.N(2) - Cell.N(1)) / 2;
-               (Cell.N(1:end-1) + Cell.N(2:end)) / 2;
-               Cell.N(end) + (Cell.N(end) - Cell.N(end-1)) / 2];
-Cell.Width = Edge.N(2:end) - Edge.N(1:end-1);
-Cell.Z = Inputs.Hyd.InitialGeometry(:,2);
-
-% Initialise hydraulics
-Cell.Wet = ones(Cell.NCells,1);
-
-% Initialise sediment
-if Inputs.Sed.SedType == 1 % uniform sediment
-    Frac.Di_m = Inputs.Sed.SedSize;
-    Cell.Fi = ones(Cell.NCells,1);
-    Cell.BulkFi = Cell.Fi;
-elseif Inputs.Sed.SedType == 2 % graded sediment
-    Frac.Di_m = Inputs.Sed.SedSize(:,1)';
-    Cell.Fi = ones(Cell.NCells,1) * Inputs.Sed.SedSize(:,2)';
-    Cell.BulkFi = ones(Cell.NCells,1) * Inputs.Sed.SedSize(:,3)';
-end
-Frac.NFracs = size(Frac.Di_m,2);
-Frac.Di_phi = -log2(Frac.Di_m * 1000);
-if Inputs.Opt.ST.Formula == 1
-    Frac.SandFrac = Frac.Di_m <= 0.002;
-end
-Cell.SubDg_m = 2.^-sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.BulkFi, 2) ./1000;
-
-% Initialise morpho
-Cell.Delta_tot = zeros(Cell.NCells,1);
-Cell.Delta_i_tot = zeros(Cell.NCells,Frac.NFracs);
-
-% Initialise Time
-T = Inputs.Time.StartTime - Inputs.Time.dT;
-
-% Set up cross-section plot
-Dummy = NaN(size(Cell.N));
-XsFigure = PlotXS(Cell.N,Edge.N,Inputs.Hyd.InitialGeometry(:,2),Cell.Z,NaN,Cell.Wet,Dummy,Dummy,Dummy,Dummy,Cell.SubDg_m,0);
-clear Dummy
+%% Set up cross-section plot
+XsFigure = PlotXS(Cell,Edge,Bank,Inputs.Hyd.InitialGeometry(:,2),NaN,0);
 PlotT = Inputs.Time.StartTime;
 DiagT = Inputs.Time.StartTime;
 
 %% Main Loop
+T = Inputs.Time.StartTime - Inputs.Time.dT;
 
 while T < Inputs.Time.EndTime
     
@@ -170,7 +133,7 @@ while T < Inputs.Time.EndTime
     % Outputs
     if T >= PlotT + Inputs.Outputs.PlotInt
         PlotT = PlotT + Inputs.Outputs.PlotInt;
-        UpdateXsPlot(XsFigure, Cell.Z,WL,Cell.Wet,Cell.U,Cell.Tau_S,Cell.qsS_flow_kg,Cell.Dg_m,Cell.SubDg_m,T)
+        UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T)
     end
     if T >= DiagT + Inputs.Outputs.DiagInt
         DiagT = DiagT + Inputs.Outputs.DiagInt;
@@ -178,5 +141,5 @@ while T < Inputs.Time.EndTime
     end
 end
 
-% Final outputs
-UpdateXsPlot(XsFigure, Cell.Z,WL,Cell.Wet,Cell.U,Cell.Tau_S,Cell.qsS_flow_kg,Cell.Dg_m,Cell.SubDg_m,T)
+%% Final outputs
+UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T)
