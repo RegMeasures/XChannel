@@ -1,4 +1,4 @@
-function [XsFigure] = PlotXS(Cell,Edge,Bank,IniBedLevel,WL,T)
+function [XsFigure] = PlotXS(Cell,Edge,Bank,IniBedLevel,WL,T,Flow)
 % Plot cross-section
 
 % Create new figure in the middle of the screen with a wide aspect ratio
@@ -51,10 +51,10 @@ ylabel(XsFigure.BedVelPlotH(2),'Velocity (m/s)');
 %legend('Initial bed','Current bed','Water level',...
 %       'Location','SouthOutside','Orientation','horizontal');
 XScale = Edge.N([1,end]);
-set(XsFigure.BedVelPlotH(1),'XLim', XScale,'YColor','k');
-set(XsFigure.BedVelPlotH(2),'XLim', XScale);
+set(XsFigure.BedVelPlotH(1),'XLim', XScale,'YColor','k','XGrid','on');
+set(XsFigure.BedVelPlotH(2),'XLim', XScale,'YLimMode','auto','YTickMode','auto');
 set(XsFigure.BedLineH,'Color','k','LineWidth',1)
-XsFigure.XsPlotTitleH = title(['Model time = ', num2str(T), ' s']);
+XsFigure.XsPlotTitleH = title(sprintf('Model time = %.0f s, Flow = %.1f, WL = %.2f',T , Flow, WL));
 
 hold off
 
@@ -65,7 +65,7 @@ subplot(4,1,3);
 [XsFigure.ShearTransPlotH, XsFigure.ShearLineH, XsFigure.TransLineH] = plotyy(Cell.N, Cell.Tau_S, Cell.N, Cell.qsS_flow_kg);
 
 % Labels and formatting
-set(XsFigure.ShearTransPlotH(1),'XLim',XScale,'XTickLabel','','YLimMode','auto','YTickMode','auto','box','off')
+set(XsFigure.ShearTransPlotH(1),'XLim',XScale,'XTickLabel','','YLimMode','auto','YTickMode','auto','box','off','XGrid','on')
 set(XsFigure.ShearTransPlotH(2),'XLim',XScale,'XTickLabel','','YLimMode','auto','YTickMode','auto')
 ylabel(XsFigure.ShearTransPlotH(1),'\tau_S (N/m^2/m)');
 ylabel(XsFigure.ShearTransPlotH(2),'q_s_,_S (kg/s/m)');
@@ -87,7 +87,7 @@ ArmourIndex = (Cell.Dg_m)./(Cell.SubDg_m);
 % Labels and formatting
 %set(XsFigure.DgAxesH(1),'XLim',XScale)
 xlabel('Distance across section (m)');
-set(XsFigure.DgPlotH(1),'XLim',XScale,'YLimMode','auto','YTickMode','auto','box','off')
+set(XsFigure.DgPlotH(1),'XLim',XScale,'YLimMode','auto','YTickMode','auto','box','off','XGrid','on')
 set(XsFigure.DgPlotH(2),'XLim',XScale,'YLimMode','auto','YTickMode','auto','box','off')
 ylabel(XsFigure.DgPlotH(1),'D_g (mm)');
 ylabel(XsFigure.DgPlotH(2),'Armour index');

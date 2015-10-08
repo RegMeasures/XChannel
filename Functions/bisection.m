@@ -1,4 +1,4 @@
-function [solution] = bisection(f,high,low,tol)
+function [solution] = bisection(f,high,low,tol,ItMax)
 % simple bisection solver
 % f = function where we desire to find f(solution) = 0
 % high = initial high guess i.e. f(high>0)
@@ -18,7 +18,9 @@ end
 % find solution
 solution = (high+low)/2;
 err = f(solution);
-while abs(err)>tol;
+Iteration = 0;
+while abs(err) > tol && Iteration < ItMax;
+    Iteration = Iteration + 1;
     if err>0
         high = solution;
     else
@@ -26,6 +28,11 @@ while abs(err)>tol;
     end
     solution = (high+low)/2;
     err = f(solution);
+end
+
+if Iteration > ItMax
+    fprintf('WARNING: max number of iterations exceeded in routine bisection\n')
+    fprintf('         error (%g) exceeds tolerance (%g)\n',err,tol)
 end
 
 end

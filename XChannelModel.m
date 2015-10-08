@@ -6,13 +6,13 @@
 addpath('Functions')
 
 %% Read model data and options from intput file
-[Inputs] = ReadModelInputs('TestModel.txt','C:\Projects\Research\BankErosionMatlab\Trunk\Inputs\');
+[Inputs] = ReadModelInputs; %('TestModel.txt','C:\Projects\Research\BankErosionMatlab\Trunk\Inputs\');
 
 %% Initialise the main variable structs
 [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs);
 
 %% Set up cross-section plot
-XsFigure = PlotXS(Cell,Edge,Bank,Inputs.Hyd.InitialGeometry(:,2),NaN,0);
+XsFigure = PlotXS(Cell,Edge,Bank,Inputs.Hyd.InitialGeometry(:,2),NaN,0,Inputs.Hyd.Flow);
 PlotT = Inputs.Time.StartTime;
 DiagT = Inputs.Time.StartTime;
 
@@ -24,7 +24,7 @@ while T < Inputs.Time.EndTime
     % Move to next timestep
     T = T + Inputs.Time.dT;
     Cell.WetLastTimestep = Cell.Wet;
-    
+      
     % Update bed composition
     if Inputs.Sed.SedType == 2
         % NEEDS MORE THOUGHT HERE ABOUT MIXING MODEL...
@@ -32,11 +32,18 @@ while T < Inputs.Time.EndTime
         Cell.SubSurfFlux_i = (max(-Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.BulkFi - ...
                         (max(Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.Fi; % Fractional volumetric flux rate into active layer from subsurface [m3/s/m]
         % Fi = (Fi * DA - SubSurfFlux_i) / DA;
-        Cell.Fi = (Cell.Fi * Inputs.Sed.DA + (Cell.Delta_i_tot - Cell.SubSurfFlux_i) * Inputs.Time.dT) / Inputs.Sed.DA;
+        Cell.Fi = (Cell.Fi * Inputs.Sed.DA + (Cell.Delta_i_tot + Cell.SubSurfFlux_i) * Inputs.Time.dT) / Inputs.Sed.DA;
+        Cell.Fi(Cell.Fi<0) = 0;
+        Cell.Fi = Cell.Fi ./ (sum(Cell.Fi,2) * ones(1,Frac.NFracs)); % To prevent small errors propogating?
     end
 
     % Update bed level
     Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT / Inputs.Sed.Porosity;
+    
+    % Get new flow (if time series)
+    if Inputs.Hyd.FlowType == 2;
+        Inputs.Hyd.Flow = interp1(Inputs.Hyd.FlowTS(:,1),Inputs.Hyd.FlowTS(:,2),T);
+    end
     
     % Calculate basic hydraulics
     Cell.H = zeros(Cell.NCells,1);
@@ -133,7 +140,7 @@ while T < Inputs.Time.EndTime
     % Outputs
     if T >= PlotT + Inputs.Outputs.PlotInt
         PlotT = PlotT + Inputs.Outputs.PlotInt;
-        UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T)
+        UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
     end
     if T >= DiagT + Inputs.Outputs.DiagInt
         DiagT = DiagT + Inputs.Outputs.DiagInt;
@@ -142,4 +149,4 @@ while T < Inputs.Time.EndTime
 end
 
 %% Final outputs
-UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T)
+UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)

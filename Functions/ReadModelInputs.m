@@ -22,12 +22,17 @@ fclose(fid);
 
 %% Read in hydraulics parameters
 Inputs.Hyd.InitialGeometry = GetInputParameter(C,'Geometry');
-Inputs.Hyd.Flow = GetInputParameter(C,'Flow');
+[Inputs.Hyd.Flow, Inputs.Hyd.FlowType] = GetInputParameter(C,'Flow');
+if Inputs.Hyd.FlowType == 2 % Flow from timeseries file
+    Inputs.Hyd.FlowTS = Inputs.Hyd.Flow;
+    Inputs.Hyd.Flow = Inputs.Hyd.FlowTS(1,2);
+end
 Inputs.Hyd.Slope = GetInputParameter(C,'Slope');
 Inputs.Hyd.Roughness = GetInputParameter(C,'Roughness');
 Inputs.Hyd.Radius = GetInputParameter(C,'Radius');
-Inputs.Hyd.DryFlc = GetInputParameter(C,'DryFlc',0); % drying and flooding threshold [m]
-Inputs.Hyd.QTol = GetInputParameter(C,'QTol',Inputs.Hyd.Flow/1000); % flow tolerance when calculating water level [m3/s]
+Inputs.Hyd.DryFlc = GetInputParameter(C,'DryFlc',0);                       % drying and flooding threshold [m]
+Inputs.Hyd.QTol = GetInputParameter(C,'QTol',0.001);                       % flow tolerance when calculating water level [m3/s]
+Inputs.Hyd.ItMax = GetInputParameter(C,'ItMax',20);                        % maximum number of iterations for setting WL
 Inputs.Hyd.Kappa = GetInputParameter(C,'Kappa',0.4);
 Inputs.Hyd.Rho_W = GetInputParameter(C,'RhoW',1000);
 Inputs.Hyd.g = GetInputParameter(C,'Gravity',9.81);
@@ -36,8 +41,8 @@ Inputs.Hyd.g = GetInputParameter(C,'Gravity',9.81);
 [Inputs.Sed.SedSize, Inputs.Sed.SedType] = GetInputParameter(C,'SedSize');
 Inputs.Sed.Rho_S = GetInputParameter(C,'RhoS',2650);
 Inputs.Sed.Porosity = GetInputParameter(C,'Porosity',0.4);
-Inputs.Sed.DA = GetInputParameter(C,'DA'); % Active layer thickness [m]
-Inputs.Sed.SedThr = GetInputParameter(C,'SedThr',Inputs.Hyd.DryFlc*2); % threshold depth for sediment transport [m]
+Inputs.Sed.DA = GetInputParameter(C,'DA');                                 % Active layer thickness [m]
+Inputs.Sed.SedThr = GetInputParameter(C,'SedThr',Inputs.Hyd.DryFlc*2);     % threshold depth for sediment transport [m]
 if Inputs.Sed.SedThr<Inputs.Hyd.DryFlc
     error('SedThr must be >= DryFlc')
 end

@@ -1,4 +1,4 @@
-function UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T)
+function UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Flow)
 % Update bed level and water level on cross-section plot
 % See also PlotXS
 
@@ -52,7 +52,7 @@ ArmourIndex = (Cell.Dg_m)./(Cell.SubDg_m);
 set(XsFigure.ArmourLineH, 'YData', ArmourIndex)
 
 % Update title
-set(XsFigure.XsPlotTitleH, 'String', ['Model time = ', num2str(T), ' s'])   
+set(XsFigure.XsPlotTitleH, 'String', sprintf('Model time = %.0f s, Flow = %.1f, WL = %.2f',T , Flow, WL))   
 
 drawnow
 
