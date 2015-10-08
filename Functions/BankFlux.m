@@ -27,7 +27,7 @@ for BankNo = 1:Bank.NBanks
             FluxRate = Options.ThetSD * ToeErosionRate;
         case 3
             % Flux based on bank toe transport rate
-            ToeTransportRate = Cell.qsS_flow_kg(Bottom);
+            ToeTransportRate = Cell.qsTot_flow(Bottom);
             FluxRate = Options.QsBeRatio * ToeTransportRate;
         case 4
             % Flux based on toe transport rate * slope

@@ -15,6 +15,12 @@ Edge.N = [Cell.N(1) - (Cell.N(2) - Cell.N(1)) / 2;
                Cell.N(end) + (Cell.N(end) - Cell.N(end-1)) / 2];
 Cell.Width = Edge.N(2:end) - Edge.N(1:end-1);
 Cell.Z = Inputs.Hyd.InitialGeometry(:,2);
+Cell.Zinitial = Inputs.Hyd.InitialGeometry(:,2);
+if size(Inputs.Hyd.InitialGeometry,2) >= 3
+    Cell.Zfinal = Inputs.Hyd.InitialGeometry(:,3);
+else
+    Cell.Zfinal = NaN(Cells.NCells,1);
+end
 
 %% Initialise hydraulics
 Cell.Wet = ones(Cell.NCells,1);

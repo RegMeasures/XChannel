@@ -1,4 +1,4 @@
-function [XsFigure] = PlotXS(Cell,Edge,Bank,IniBedLevel,WL,T,Flow)
+function [XsFigure] = PlotXS(Cell,Edge,Bank,WL,T,Flow)
 % Plot cross-section
 
 % Create new figure in the middle of the screen with a wide aspect ratio
@@ -10,8 +10,11 @@ XsFigure.FigureH = figure('Position',[scrsz(3)/2 - 500, scrsz(4)/2-400, 1000, 80
 XsFigure.XsAxesH = subplot(4,1,[1:2]);
 
 % Plot initial bed level
-stairs(Edge.N, [IniBedLevel; IniBedLevel(end)],'k--');
+stairs(Edge.N, [Cell.Zinitial; Cell.Zinitial(end)],'k--');
 hold on
+
+% Plot final bed elevation
+stairs(Edge.N, [Cell.Zfinal; Cell.Zfinal(end)],'c--');
 
 % Plot current bed level and velocity
 [XsFigure.BedVelPlotH, XsFigure.BedLineH, XsFigure.VelLineH] = plotyy(Edge.N, [Cell.Z; Cell.Z(end)], Cell.N, Cell.U, 'stairs', 'plot' );

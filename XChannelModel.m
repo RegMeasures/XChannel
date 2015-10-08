@@ -12,7 +12,7 @@ addpath('Functions')
 [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs);
 
 %% Set up cross-section plot
-XsFigure = PlotXS(Cell,Edge,Bank,Inputs.Hyd.InitialGeometry(:,2),NaN,0,Inputs.Hyd.Flow);
+XsFigure = PlotXS(Cell,Edge,Bank,NaN,0,Inputs.Hyd.Flow);
 PlotT = Inputs.Time.StartTime;
 DiagT = Inputs.Time.StartTime;
 
@@ -32,7 +32,9 @@ while T < Inputs.Time.EndTime
         Cell.SubSurfFlux_i = (max(-Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.BulkFi - ...
                         (max(Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.Fi; % Fractional volumetric flux rate into active layer from subsurface [m3/s/m]
         % Fi = (Fi * DA - SubSurfFlux_i) / DA;
-        Cell.Fi = (Cell.Fi * Inputs.Sed.DA + (Cell.Delta_i_tot + Cell.SubSurfFlux_i) * Inputs.Time.dT) / Inputs.Sed.DA;
+        Cell.Fi = (Cell.Fi .* (Cell.Width * ones(1,Frac.NFracs)) * Inputs.Sed.DA + ...
+                               (Cell.Delta_i_tot + Cell.SubSurfFlux_i) * Inputs.Time.dT ) ./ ...
+                               (Inputs.Sed.DA * (Cell.Width * ones(1,Frac.NFracs)));
         Cell.Fi(Cell.Fi<0) = 0;
         Cell.Fi = Cell.Fi ./ (sum(Cell.Fi,2) * ones(1,Frac.NFracs)); % To prevent small errors propogating?
     end
@@ -80,8 +82,9 @@ while T < Inputs.Time.EndTime
         Cell.qsiTot_flow = WilcockCrowe(Inputs.Sed.Rho_S, Inputs.Hyd.Rho_W, Inputs.Hyd.g, Cell.NCells, Frac.NFracs, Frac.Di_m, Frac.SandFrac, Cell.Fi, Cell.Dg_m, Cell.Tau_Tot, Cell.UStar);
     end
     Cell.qsiTot_flow(~Cell.Active) = 0;
+    Cell.qsTot_flow = sum(Cell.qsiTot_flow, 2);
     Cell.qsS_flow_kg = zeros(Cell.NCells,1);
-    Cell.qsS_flow_kg(Cell.Active) = Inputs.Sed.Rho_S * sum(Cell.qsiTot_flow(Cell.Active), 2) .* (Cell.Tau_S(Cell.Active) ./ Cell.Tau_Tot(Cell.Active)); % Streamwise mass transport rate [kg/s/m]
+    Cell.qsS_flow_kg(Cell.Active) = Inputs.Sed.Rho_S *  Cell.qsTot_flow(Cell.Active,:) .* (Cell.Tau_S(Cell.Active) ./ Cell.Tau_Tot(Cell.Active)); % Streamwise mass transport rate [kg/s/m]
     Cell.qsiN_flow = Cell.qsiTot_flow .* ((Cell.Tau_N ./ Cell.Tau_Tot) * ones(1, Frac.NFracs));
     Cell.qsiN_flow(isnan(Cell.qsiN_flow)) = 0;
 

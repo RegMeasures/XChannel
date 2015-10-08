@@ -15,7 +15,7 @@ switch Options.Approach
     case 3
         % Bank height bank identification approach
         BankHeight = Cell.Z(2:end) - Cell.Z(1:end-1);
-        IsBank = (BankHeight >= Options.BHeight) - (BankHeight <= -Options.BHeight);
+        IsBank = (BankHeight <= -Options.BHeight) - (BankHeight >= Options.BHeight);
     case 4
         % Bank slope bank identification approach
         IsBank = (Edge.Slope(2:end-1) <= -Options.BSlope) - (Edge.Slope(2:end-1) >= Options.BSlope);
