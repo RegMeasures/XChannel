@@ -1,0 +1,83 @@
+%% Test model
+
+%% ============================== Hydraulics ==============================
+Geometry  = Selwyn_XS3_3m.csv % CSV file with 2 or 3 columns (no headers): 
+                             %   1: Cell centre position [m]
+                             %   2: Cell centre elevation [m] 
+                             %   3: Final cell centre elevation [m] (optional, purely for display purposes)
+Flow      = SelwynFlow2008.csv % 0 time = 30/7/2008 % [m3/s]
+Slope     = 0.007            % overall average ~0.007 but locally may be lower? % [m/m]
+Roughness = 0.04             % [manning's n]
+Radius    = 120              % initial bank curvature ~195m, final ~95(XS4), streamline curvature likely ~100m? % radius of streamline curvature[m]
+DryFlc    = 0.005            % Theshold depth for wetting [m] (default = 0, drying occurs at DRYFLC/2)
+QTol      = 0.0001           % Tolerance for model flow vs desired flow when setting water level [m3/s] (default = 0.001)
+ItMax     = 50               % Maximum number of iterations for setting WL (default = 20)
+Kappa     = 0.41             % Von Karman Constant (default = 0.4)
+RhoW      = 1000             % Fluid density [kg/m3] (default 1000)
+Gravity   = 9.81             % Gravitational constant [m/s2] (default = 9.81)
+
+%% =============================== Sediment ===============================
+SedSize   = SelwynSedFrac.csv % Either numeric D50 for single size [m], or csv file with 3 columns: fraction D50 [m], initial condition SurfaceFi [dimensionless], IC BulkFi [dimensionless]
+RhoS      = 2650             % Sed density, either single global value or ref to to file containing fractional densities [kg/m3]
+Porosity  = 0.4              % Porosity of bulk bed sediment [dimensionless]
+DA        = 0.2              % Active layer thickness [m] (no effect if uniform sediment)
+SedThr    = 0.007            % Threshold depth for sediment transport [m] (default = 2*DRYFLC)
+
+%% =============================== Options ================================
+UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central
+ESpir     = 1                % effect of spiral flow on bedload transport (default = 1)
+STFormula = 1                % Sediment transport formula:
+                             %   1 = Wilcock and Crowe
+                             %   No other options yet
+
+% Transverse bed slope effects on sediment transport
+BedSlope  = 1                % Bed slope formulation (default = 0)
+                             %   0 = No bed slope formulation
+                             %   1 = Talmon et al 1995 bed slope formulation
+Ash       = 9                % Parameter for Talmon et al bed slope formulation (default = 9)
+Bsh       = 0.5              % Parameter for Talmon et al bed slope formulation (default = 0.5)
+Csh       = 0.3              % Parameter for Talmon et al bed slope formulation (default = 0.3)
+Dsh       = 0.0              % Parameter for Talmon et al bed slope formulation (default = 0.7)
+
+% Bank identification
+BankID    = 3                % Bank identification approach (default = 0)
+                             %   0 = No bank ID (i.e. everywhere is a bank)
+                             %   1 = Wet/dry interface
+                             %   2 = Transporting/non-transporting
+                             %   3 = Bank height (needs: BHEIGHT)
+                             %   4 = Bank slope (needs: BSLOPE)
+BHeight   = 1                % Bank height threshold [m] (for BankId 3)
+BSlope    = 1                % Bank slope threshold [m/m] (for BankId 4)
+
+% Bank erosion stencil
+BankTop   = 0                % Stencil for locating bank top cell (default = 0)
+                             %   0 = Adjacent cell (no stencil)
+BankBot   = 0                % Stencil for locating bank bottom cell (default = 0)
+                             %   0 = Adjacent cell (no stencil)
+                             %   1 = Maximum slope curvature within distance and cell limits (needs: BotCellLim, BotCellDist)
+TopCellLim = 3               % Search limit for bank top specified in no of cells (default = 1, i.e. adjacent only)             
+BotCellLim = 3               % Search limit for bank bottom specified in no of cells (default = 1, i.e. adjacent only)    
+TopDistLim = 0.1             % Search limit for bank top specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
+BotDistLim = 0.1             % Search limit for bank bottom specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
+
+% Bank erosion flux calculation
+BankFlux  = 3                % Bank erosion flux calculation approach (default = 0)
+                             %   0 = No Bank erosion flux
+                             %   1 = Flux/dT is proportional to excess slope (needs: REPOSE, SLIPRATE)
+                             %   2 = Flux rate is proportional to bank toe erosion rate
+                             %   3 = Flux rate is proportional to bank toe transport rate
+                             %   4 = Flux rate is proportional to (bank toe transport rate * slope)
+Repose    = 1                % Limiting slope [m/m] (for BankFlux 1)
+SlipRatio = 1                % Proportion of excess material slipped per timestep [0-1] (default = 1, for BankFlux 1)
+ThetSD    = 0.2              % Bank erosion flux as a proportion of bank toe erosion rate (default = 0.5, for BankFlux 2)
+QsBeRatio = 0.012             % Bank erosion flux as a proportion of bank toe transport rate (for BankFlux 3)
+BErodibility = 0.005         % Bank erosion flux as a proportion of (bank toe transport rate * slope)
+
+%% =============================== Times ==================================
+dT        = 60               % Timestep [s]
+StartTime = 60000            % [s] (default = 0)
+EndTime   = 200000           % [s]
+
+%% ============================== Outputs =================================
+DiagInt   = 360              % Diagnostics update interval [s] (default = DT)
+PlotInt   = 60               % Plot update interval [s] (default = DT)
