@@ -57,6 +57,26 @@ Inputs.Opt.Spiral.ESpiral = GetInputParameter(C,'ESpir',1); % Coefficient for ef
 
 % Transport formula
 Inputs.Opt.ST.Formula = GetInputParameter(C,'STFormula',1);
+switch Inputs.Opt.ST.Formula
+    case 0
+        fprintf('No bedload transport formula being used\n')
+    case 1
+        fprintf('Meyer-Peter-Muller bedload transport formula being used\n')
+        Inputs.Opt.ST.ThetaCrit = GetInputParameter(C,'ThetaCrit',0.047);
+        Inputs.Opt.ST.MPMcoef = GetInputParameter(C,'MPMcoef',4.93);
+        Inputs.Opt.ST.MPMexponent = GetInputParameter(C,'MPMexponent',1.6);
+    case 2
+        fprintf('Wilcock-Crowe bedload transport formula being used\n')
+end
+
+% Hiding and exposure correction
+if Inputs.Opt.ST.Formula == 2
+    % W-C formula, use built in hiding and exposure function
+    Inputs.Opt.ST.HidExp = 2;
+else
+    % Other bedload formula, use stand-alone hiding and exposure function
+    Inputs.Opt.ST.HidExp = GetInputParameter(C,'HidExp',0);
+end
 
 % Bedslope effects
 Inputs.Opt.Slope.Formula = GetInputParameter(C,'BedSlope',0);
@@ -64,6 +84,10 @@ switch Inputs.Opt.Slope.Formula
     case 0
         fprintf('No bed slope formulation being used\n')
     case 1
+        fprintf('General bed slope formulation being used (Sekine and Parker)\n')
+        Inputs.Opt.Slope.BetaStar = GetInputParameter(C,'BetaStar');
+        Inputs.Opt.Slope.m = GetInputParameter(C,'m');
+    case 2
         fprintf('Talmon et al (1995) bed slope calculation\n')
         Inputs.Opt.Slope.A_sh = GetInputParameter(C,'Ash',9);
         Inputs.Opt.Slope.B_sh = GetInputParameter(C,'Bsh',0.5);
@@ -130,6 +154,9 @@ switch Inputs.Opt.Bank.Flux.Approach
         fprintf('Bank erosion flux proportional to (bank toe transport rate * slope)\n')
         Inputs.Opt.Bank.Flux.BErodibility = GetInputParameter(C,'BErodibility');
 end
+
+% Other bank erosion options
+Inputs.Opt.Bank.Flux.Approach = GetInputParameter(C,'BankFlux',0);
 
 % Times
 Inputs.Time.dT = GetInputParameter(C,'dT');

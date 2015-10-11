@@ -19,13 +19,15 @@ DiagT = Inputs.Time.StartTime;
 %% Main Loop
 T = Inputs.Time.StartTime - Inputs.Time.dT;
 
-while T < Inputs.Time.EndTime
-    
-    % Move to next timestep
+while T < Inputs.Time.EndTime  
+    %% Move to next timestep
     T = T + Inputs.Time.dT;
     Cell.WetLastTimestep = Cell.Wet;
-      
-    % Update bed composition
+    
+    %% Update bed level
+    Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT / Inputs.Sed.Porosity;  
+    
+    %% Update bed composition
     if Inputs.Sed.SedType == 2
         % NEEDS MORE THOUGHT HERE ABOUT MIXING MODEL...
         % Fi = (Fi * DA + Delta_i_tot * DT) / DA; % Could mix new sed in before moving from active to sub-surface??? Timestep sensitive?
@@ -39,15 +41,19 @@ while T < Inputs.Time.EndTime
         Cell.Fi = Cell.Fi ./ (sum(Cell.Fi,2) * ones(1,Frac.NFracs)); % To prevent small errors propogating?
     end
 
-    % Update bed level
-    Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT / Inputs.Sed.Porosity;
+    %% Update sediment properties (if graded sediment)
+    if Inputs.Sed.SedType == 2
+        Cell.Dg_phi = sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.Fi, 2);
+        Cell.Dg_m = 2.^-Cell.Dg_phi ./ 1000;
+        Cell.SigmaG_phi = sqrt(sum(Cell.Fi .* ((ones(Cell.NCells,1)*Frac.Di_phi) - (Cell.Dg_phi*ones(1,Frac.NFracs))).^2, 2));
+    end
     
-    % Get new flow (if time series)
+    %% Get new flow (if time series)
     if Inputs.Hyd.FlowType == 2;
         Inputs.Hyd.Flow = interp1(Inputs.Hyd.FlowTS(:,1),Inputs.Hyd.FlowTS(:,2),T);
     end
     
-    % Calculate basic hydraulics
+    %% Calculate basic hydraulics
     Cell.H = zeros(Cell.NCells,1);
     Cell.U = zeros(Cell.NCells,1);
     Cell.Tau_S = zeros(Cell.NCells,1);
@@ -58,7 +64,7 @@ while T < Inputs.Time.EndTime
     Cell.U(Cell.Wet) = Cell.H(Cell.Wet).^(2/3) * Inputs.Hyd.Slope^0.5 / Inputs.Hyd.Roughness;
     Cell.Tau_S(Cell.Wet) = Inputs.Hyd.Rho_W * Inputs.Hyd.g * Cell.U(Cell.Wet).^2 * Inputs.Hyd.Roughness^2 ./ Cell.H(Cell.Wet).^(1/3);
 
-    % Calculate secondary flow
+    %% Calculate secondary flow
     Cell.AlphaSpiral = NaN(Cell.NCells,1);
     Cell.SpiralIntensity = zeros(Cell.NCells,1);
     Cell.Tau_N = zeros(Cell.NCells,1);
@@ -69,19 +75,16 @@ while T < Inputs.Time.EndTime
     Cell.Tau_N(Cell.Wet) = -2 * Inputs.Opt.Spiral.ESpiral * Inputs.Hyd.Rho_W * Cell.AlphaSpiral(Cell.Wet).^2 .* (1 - Cell.AlphaSpiral(Cell.Wet) / 2) .* Cell.U(Cell.Wet) .* Cell.SpiralIntensity(Cell.Wet); % Eq9.145 D3D or Eq26 Kalkwijk & Booji 1986
     Cell.Tau_Tot = sqrt(Cell.Tau_S.^2 + Cell.Tau_N.^2);
     Cell.UStar = sqrt(Cell.Tau_Tot / Inputs.Hyd.Rho_W);
-
-    % Sediment properties
-    Cell.Dg_phi = sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.Fi, 2);
-    Cell.Dg_m = 2.^-Cell.Dg_phi ./ 1000;
-    Cell.SigmaG_phi = sqrt(sum(Cell.Fi .* ((ones(Cell.NCells,1)*Frac.Di_phi) - (Cell.Dg_phi*ones(1,Frac.NFracs))).^2, 2));
-
-    % Calculate voumetric sediment transport due to flow (in cell centres)
+    
+    %% Calculate fractional volumetric bedload transport due to flow (in cell centres)
+    Cell.ShieldsStress_i = (Cell.Tau_Tot * ones(1,Frac.NFracs)) ./ ...
+                          ((Inputs.Sed.Rho_S - Inputs.Hyd.Rho_W) * Inputs.Hyd.g * (ones(Cell.NCells,1)*Frac.Di_m));
+                     
     Cell.Active = (WL - Cell.Z) >= Inputs.Sed.SedThr;
     Edge.Active = [0; Cell.Active(1:end-1) .* Cell.Active(2:end); 0];
-    if Inputs.Opt.ST.Formula == 1
-        Cell.qsiTot_flow = WilcockCrowe(Inputs.Sed.Rho_S, Inputs.Hyd.Rho_W, Inputs.Hyd.g, Cell.NCells, Frac.NFracs, Frac.Di_m, Frac.SandFrac, Cell.Fi, Cell.Dg_m, Cell.Tau_Tot, Cell.UStar);
-    end
-    Cell.qsiTot_flow(~Cell.Active) = 0;
+    
+    [Cell.qsiTot_flow,Cell.ThetaCrit_i] = BedLoad(Inputs, Cell, Frac);
+    
     Cell.qsTot_flow = sum(Cell.qsiTot_flow, 2);
     Cell.qsS_flow_kg = zeros(Cell.NCells,1);
     Cell.qsS_flow_kg(Cell.Active) = Inputs.Sed.Rho_S *  Cell.qsTot_flow(Cell.Active,:) .* (Cell.Tau_S(Cell.Active) ./ Cell.Tau_Tot(Cell.Active)); % Streamwise mass transport rate [kg/s/m]
@@ -95,34 +98,19 @@ while T < Inputs.Time.EndTime
         C2E_Weights = 0.5 * ones(Cell.NCells - 1, 1);
     end
     
+    Edge.H = Centre2Edge(Cell.H, C2E_Weights);
+    Edge.Tau_Tot = Centre2Edge(Cell.Tau_Tot, C2E_Weights);    
+    Edge.ShieldsStress_i = Centre2Edge(Cell.ShieldsStress_i, C2E_Weights);
     Edge.qsiTot_flow = Centre2Edge(Cell.qsiTot_flow, C2E_Weights);
     Edge.qsiTot_flow(~Edge.Active,:) = 0;
     Edge.qsiN_flow = Centre2Edge(Cell.qsiN_flow, C2E_Weights);
     Edge.qsiN_flow(~Edge.Active,:) = 0;
-    Edge.H = Centre2Edge(Cell.H, C2E_Weights);
-    Edge.Tau_Tot = Centre2Edge(Cell.Tau_Tot, C2E_Weights);
+    Edge.ThetaCrit_i = Centre2Edge(Cell.ThetaCrit_i, C2E_Weights);
     Edge.Dg_m = Centre2Edge(Cell.Dg_m, C2E_Weights);
     
     % Calculate sediment transport due to bed slope
     Edge.Slope = [0; (Cell.Z(2:end) - Cell.Z(1:end-1)) ./ (Cell.N(2:end) - Cell.N(1:end-1)); 0];
-    % Note: at the moment, for the purposes of slope analysis we are
-    %       assuming unadjusted bedload transport vector is normal to
-    %       cross-section and that downstream slope << transverse slope
-    %       (i.e. secondary flow neglected, downstream slope neglected for 
-    %       bed slope calc). 
-    switch Inputs.Opt.Slope.Formula
-        case 0
-            % No bed slope influence on transport
-            Edge.qsiN_slope = zeros(Edge.NEdges, Frac.NFracs);
-        case 1
-            % Talmon et al 1995
-            Edge.ShieldsStressi = (Edge.Tau_Tot * ones(1, Frac.NFracs)) ./ ((Inputs.Sed.Rho_S - Inputs.Hyd.Rho_W) * Inputs.Hyd.g * (ones(Edge.NEdges, 1) * Frac.Di_m));
-            Edge.fTheta = Inputs.Opt.Slope.A_sh * Edge.ShieldsStressi.^Inputs.Opt.Slope.B_sh .* ...
-                     (((ones(Edge.NEdges, 1) * Frac.Di_m)) ./ (Edge.H * ones(1, Frac.NFracs))).^Inputs.Opt.Slope.C_sh .* ...
-                     ((ones(Edge.NEdges,1) * Frac.Di_m) ./ (Edge.Dg_m * ones(1,Frac.NFracs))).^Inputs.Opt.Slope.D_sh;
-            Edge.qsiN_slope = - Edge.qsiTot_flow .* (1 ./ Edge.fTheta) .* (Edge.Slope * ones(1, Frac.NFracs));
-            Edge.qsiN_slope(isnan(Edge.qsiN_slope)) = 0;
-    end
+    Edge.qsiN_slope = BedSlope(Inputs, Edge, Frac);
     
     % Erosion/deposition due to flow and associated effects (i.e. everything except bank erosion)
     Cell.Delta_i_flow = Edge.qsiN_flow(1:end-1,:) - Edge.qsiN_flow(2:end,:); % Fractional volumetric flux rate into cell from neighboring cells due to flow [m3/s/m]

@@ -8,7 +8,7 @@ Geometry  = Selwyn_XS3_3m.csv % CSV file with 2 or 3 columns (no headers):
 Flow      = SelwynFlow2008.csv % 0 time = 30/7/2008 % [m3/s]
 Slope     = 0.007            % overall average ~0.007 but locally may be lower? % [m/m]
 Roughness = 0.04             % [manning's n]
-Radius    = 120              % initial bank curvature ~195m, final ~95(XS4), streamline curvature likely ~100m? % radius of streamline curvature[m]
+Radius    = 150              % initial bank curvature ~195m, final ~95(XS4), streamline curvature likely ~100m? % radius of streamline curvature[m]
 DryFlc    = 0.005            % Theshold depth for wetting [m] (default = 0, drying occurs at DRYFLC/2)
 QTol      = 0.0001           % Tolerance for model flow vs desired flow when setting water level [m3/s] (default = 0.001)
 ItMax     = 50               % Maximum number of iterations for setting WL (default = 20)
@@ -26,18 +26,38 @@ SedThr    = 0.007            % Threshold depth for sediment transport [m] (defau
 %% =============================== Options ================================
 UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central
 ESpir     = 1                % effect of spiral flow on bedload transport (default = 1)
-STFormula = 1                % Sediment transport formula:
-                             %   1 = Wilcock and Crowe
-                             %   No other options yet
 
+% Bedload transport
+STFormula = 1                % Sediment transport formula:
+                             %   1 = Meyer-Peter-Muller (needs: TauCrit, MPMcoef, MPMexponent)
+                             %   2 = Wilcock and Crowe
+TauCrit   = 0.047            % Critical shields stress for transport (for STFormula = 1). Possible values:
+                             %   0.047  = original MPM '48 and also Wong and Parker 2006 eq. 22 (default)
+                             %   0.0495 = correction suggested in Wong and Parker 2006 eq. 24
+MPMcoef   = 4.93             % Coefficient in MPM formula possible values are:
+                             %   8    = original coefficient in Meyer-Peter and Muller 1948
+                             %   4.93 = correction suggested in Wong and Parker 2006 eq. 22 (default)
+                             %   3.97 = correction suggested in Wong and Parker 2006 eq. 24
+MPMexponent = 1.6            % Coefficient in MPM formula possible values are:
+                             %   1.5 = original MPM '48 and also Wong and Parker 2006 eq. 24
+                             %   1.6 = correction suggested in Wong and Parker 2006 eq. 22 (default)
+
+HidExp = 1                   % Hiding and exposure formulation
+                             %   0 = No hiding or exposure correction
+                             %   1 = Ashida & Michiue formulation
+                             %   2 = Wilcock and Crowe (automatically selected if STFormula = 2)
+                             
 % Transverse bed slope effects on sediment transport
 BedSlope  = 1                % Bed slope formulation (default = 0)
                              %   0 = No bed slope formulation
-                             %   1 = Talmon et al 1995 bed slope formulation
-Ash       = 9                % Parameter for Talmon et al bed slope formulation (default = 9)
-Bsh       = 0.5              % Parameter for Talmon et al bed slope formulation (default = 0.5)
-Csh       = 0.3              % Parameter for Talmon et al bed slope formulation (default = 0.3)
-Dsh       = 0.0              % Parameter for Talmon et al bed slope formulation (default = 0.7)
+                             %   1 = General transverse bed slope formula of the form shown in Sekine & Parker 1992 (needs: BetaStar, m)
+                             %   2 = Talmon et al 1995 bed slope formulation
+BetaStar  = 1.43             % Transverse slope coefficient (for BedSlope = 1)
+m         = 0.5              % Transverse slope exponent (for BedSlope = 1)
+Ash       = 9                % Parameter for Talmon et al bed slope formulation (default = 9, for BedSlope = 2)
+Bsh       = 0.5              % Parameter for Talmon et al bed slope formulation (default = 0.5, for BedSlope = 2)
+Csh       = 0.3              % Parameter for Talmon et al bed slope formulation (default = 0.3, for BedSlope = 2)
+Dsh       = 0.0              % Parameter for Talmon et al bed slope formulation (default = 0.7, for BedSlope = 2)
 
 % Bank identification
 BankID    = 3                % Bank identification approach (default = 0)
@@ -70,14 +90,14 @@ BankFlux  = 3                % Bank erosion flux calculation approach (default =
 Repose    = 1                % Limiting slope [m/m] (for BankFlux 1)
 SlipRatio = 1                % Proportion of excess material slipped per timestep [0-1] (default = 1, for BankFlux 1)
 ThetSD    = 0.2              % Bank erosion flux as a proportion of bank toe erosion rate (default = 0.5, for BankFlux 2)
-QsBeRatio = 0.012             % Bank erosion flux as a proportion of bank toe transport rate (for BankFlux 3)
+QsBeRatio = 0.0075 % 0.0125           % Bank erosion flux as a proportion of bank toe transport rate (for BankFlux 3)
 BErodibility = 0.005         % Bank erosion flux as a proportion of (bank toe transport rate * slope)
 
 %% =============================== Times ==================================
 dT        = 60               % Timestep [s]
-StartTime = 60000            % [s] (default = 0)
-EndTime   = 200000           % [s]
+StartTime = 0 %60000            % [s] (default = 0)
+EndTime   = 340000           % [s]
 
 %% ============================== Outputs =================================
-DiagInt   = 360              % Diagnostics update interval [s] (default = DT)
-PlotInt   = 60               % Plot update interval [s] (default = DT)
+DiagInt   = 720              % Diagnostics update interval [s] (default = DT)
+PlotInt   = 720              % Plot update interval [s] (default = DT)

@@ -10,7 +10,7 @@ Bank.Top = zeros(Bank.NBanks,1);
 Bank.Bottom = zeros(Bank.NBanks,1);
 
 
-% loop through all banks
+%% loop through all banks
 BankNo = 0;
 EdgeNos = 1:Edge.NEdges;
 for ii = EdgeNos(Edge.IsBank~=0) 
@@ -19,6 +19,7 @@ for ii = EdgeNos(Edge.IsBank~=0)
     DistToBank = Cell.N-Edge.N(ii);
     CellsToBank = [-ii+1:-1,1:(Cell.NCells+1-ii)]';
     
+    %% Locate bank top
     if Options.Top == 0
         % Bank top in cell adjacent to IDed bank edge
         Bank.Top(BankNo) = ii-0.5 - Edge.IsBank(ii)/2;
@@ -33,6 +34,8 @@ for ii = EdgeNos(Edge.IsBank~=0)
         end
     end
     
+    
+    %% Locate bank toe
     if Options.Bottom == 0 
         % Bank bottom in cell adjacent to IDed bank edge
         Bank.Bottom(BankNo) = ii-0.5 + Edge.IsBank(ii)/2;
@@ -53,7 +56,7 @@ for ii = EdgeNos(Edge.IsBank~=0)
     end
 end
 
-% do we need to do some cleaning to check for duplicates??
+% do we need to do some cleaning to check for duplicate banks??
 
 end
 

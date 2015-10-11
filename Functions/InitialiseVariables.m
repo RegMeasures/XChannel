@@ -34,16 +34,25 @@ if Inputs.Sed.SedType == 1 % uniform sediment
     Cell.BulkFi = Cell.Fi;
 elseif Inputs.Sed.SedType == 2 % graded sediment
     Frac.Di_m = Inputs.Sed.SedSize(:,1)';
-    Cell.Fi = ones(Cell.NCells,1) * Inputs.Sed.SedSize(:,2)';
-    Cell.BulkFi = ones(Cell.NCells,1) * Inputs.Sed.SedSize(:,3)';
+    if sum(Inputs.Sed.SedSize(:,2))>1.1 || sum(Inputs.Sed.SedSize(:,2))<0.9
+        error('Surface grain size distribution must sum to 1')
+    end
+    Cell.Fi = ones(Cell.NCells,1) * Inputs.Sed.SedSize(:,2)' / sum(Inputs.Sed.SedSize(:,2));
+    if sum(Inputs.Sed.SedSize(:,3))>1.1 || sum(Inputs.Sed.SedSize(:,3))<0.9
+        error('Sub-surface grain size distribution must sum to 1')
+    end
+    Cell.BulkFi = ones(Cell.NCells,1) * Inputs.Sed.SedSize(:,3)' / sum(Inputs.Sed.SedSize(:,3));
+else
+    error('SedSize input type not valid')
 end
 Frac.NFracs = size(Frac.Di_m,2);
 Frac.Di_phi = -log2(Frac.Di_m * 1000);
-if Inputs.Opt.ST.Formula == 1
+if Inputs.Opt.ST.Formula == 2 % Which fractions are sand - required for Wilcock-Crowe bedload formula
     Frac.SandFrac = Frac.Di_m <= 0.002;
 end
 Cell.SubDg_m = 2.^-sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.BulkFi, 2) ./1000;
-Cell.Dg_m = 2.^-sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.Fi, 2) ./1000;
+Cell.Dg_phi = sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.Fi, 2);
+Cell.Dg_m = 2.^-Cell.Dg_phi ./ 1000;
 
 %% Initialise transport
 Cell.qsS_flow_kg = NaN(Cell.NCells,1);
