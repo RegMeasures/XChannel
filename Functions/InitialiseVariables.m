@@ -21,6 +21,9 @@ if size(Inputs.Hyd.InitialGeometry,2) >= 3
 else
     Cell.Zfinal = NaN(Cells.NCells,1);
 end
+if Inputs.Opt.Bank.Flux.StoredBE % If storing bank erosion (Nicholas 2013 approach)
+    Cell.EroStore = zeros(Cell.NCells,1);
+end
 
 %% Initialise hydraulics
 Cell.Wet = ones(Cell.NCells,1);
@@ -64,8 +67,8 @@ Bank.Bottom = [];
 Bank.NBanks = 0;
 
 %% Initialise morpho
-Cell.Delta_tot = zeros(Cell.NCells,1);
-Cell.Delta_i_tot = zeros(Cell.NCells,Frac.NFracs);
+Cell.Delta_tot = zeros(Cell.NCells,1); % total volumetric flux rate into cell from neighboring cells [m3/s/m]
+Cell.Delta_i_tot = zeros(Cell.NCells,Frac.NFracs); % fractional volumetric flux rate into cell from neighboring cells [m3/s/m]
 
 %% Initialise Time
 

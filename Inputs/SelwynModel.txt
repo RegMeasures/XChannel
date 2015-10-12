@@ -42,7 +42,7 @@ MPMexponent = 1.6            % Coefficient in MPM formula possible values are:
                              %   1.5 = original MPM '48 and also Wong and Parker 2006 eq. 24
                              %   1.6 = correction suggested in Wong and Parker 2006 eq. 22 (default)
 
-HidExp = 1                   % Hiding and exposure formulation
+HidExp    = 1                % Hiding and exposure formulation
                              %   0 = No hiding or exposure correction
                              %   1 = Ashida & Michiue formulation
                              %   2 = Wilcock and Crowe (automatically selected if STFormula = 2)
@@ -90,8 +90,16 @@ BankFlux  = 3                % Bank erosion flux calculation approach (default =
 Repose    = 1                % Limiting slope [m/m] (for BankFlux 1)
 SlipRatio = 1                % Proportion of excess material slipped per timestep [0-1] (default = 1, for BankFlux 1)
 ThetSD    = 0.2              % Bank erosion flux as a proportion of bank toe erosion rate (default = 0.5, for BankFlux 2)
-QsBeRatio = 0.0075 % 0.0125           % Bank erosion flux as a proportion of bank toe transport rate (for BankFlux 3)
+QsBeRatio = 0.05             % Bank erosion flux as a proportion of bank toe transport rate (for BankFlux 3)
 BErodibility = 0.005         % Bank erosion flux as a proportion of (bank toe transport rate * slope)
+StencilMix = 0               % Mix sediment through active layer when transporting across stencil
+                             %   0 = No mixing: i.e. material is transported from bank top directly to bank toe.
+                             %   1 = Mix: i.e. material is mixed through the active layer of each cell between top and toe.
+
+StoredBE = 0                 % Store bank erosion until top can be lowered to level of toe (see Nicholas 2013)
+                             %   0 = Bank erosion flux applied immediately (default)
+                             %   1 = Erosion part of bank erosion flux stored temporarily until it can be lowered to channel bed 
+                             %       (note deposition is applied immediately creating temporary mass balance error)
 
 %% =============================== Times ==================================
 dT        = 60               % Timestep [s]

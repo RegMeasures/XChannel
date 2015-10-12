@@ -154,6 +154,8 @@ switch Inputs.Opt.Bank.Flux.Approach
         fprintf('Bank erosion flux proportional to (bank toe transport rate * slope)\n')
         Inputs.Opt.Bank.Flux.BErodibility = GetInputParameter(C,'BErodibility');
 end
+Inputs.Opt.Bank.Flux.StencilMix = GetInputParameter(C,'StencilMix',0);
+Inputs.Opt.Bank.Flux.StoredBE = GetInputParameter(C,'StoredBE',0);
 
 % Other bank erosion options
 Inputs.Opt.Bank.Flux.Approach = GetInputParameter(C,'BankFlux',0);

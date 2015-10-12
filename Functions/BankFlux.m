@@ -9,6 +9,8 @@ Delta_i_bank = zeros(Cell.NCells,Frac.NFracs);
 for BankNo = 1:Bank.NBanks
     Top = Bank.Top(BankNo);
     Bottom = Bank.Bottom(BankNo);
+    
+    % Calculate total flux from top to toe
     switch Options.Approach
         case 0
             % No bank erosion flux
@@ -36,9 +38,21 @@ for BankNo = 1:Bank.NBanks
             ToeTransportRate = Cell.qsS_flow_kg(Bottom);
             FluxRate = Options.BErodibility * ToeTransportRate * Slope;
     end
-    FluxRate_i = FluxRate * Cell.Fi(Top,:);
-    Delta_i_bank(Top,:) = Delta_i_bank(Top,:) - FluxRate_i; % MIGHT NEED TO CHANGE THIS BIT TO DEAL WITH SED MIXING WHEN TOP AND BOTTOM ARE NOT ADJACENT...?
-    Delta_i_bank(Bottom,:) = Delta_i_bank(Bottom,:) + FluxRate_i;
+    
+    % Calculate fractional flux in and out of each cell
+    if Options.StencilMix
+        if Top>Bottom
+            Delta_i_bank(Bottom+1:Top,:) = Delta_i_bank(Bottom+1:Top,:) - FluxRate * Cell.Fi(Bottom+1:Top,:);
+            Delta_i_bank(Bottom:Top-1,:) = Delta_i_bank(Bottom:Top-1,:) + FluxRate * Cell.Fi(Bottom+1:Top,:);
+        else
+            Delta_i_bank(Top:Bottom-1,:) = Delta_i_bank(Top:Bottom-1,:) - FluxRate * Cell.Fi(Top:Bottom-1,:);
+            Delta_i_bank(Top+1:Bottom,:) = Delta_i_bank(Top+1:Bottom,:) + FluxRate * Cell.Fi(Top:Bottom-1,:);
+        end
+    else
+        FluxRate_i = FluxRate * Cell.Fi(Top,:);
+        Delta_i_bank(Top,:) = Delta_i_bank(Top,:) - FluxRate_i;
+        Delta_i_bank(Bottom,:) = Delta_i_bank(Bottom,:) + FluxRate_i;
+    end
 end
 
 end

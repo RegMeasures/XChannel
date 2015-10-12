@@ -25,7 +25,7 @@ while T < Inputs.Time.EndTime
     Cell.WetLastTimestep = Cell.Wet;
     
     %% Update bed level
-    Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT / Inputs.Sed.Porosity;  
+    Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT ./ Cell.Width / Inputs.Sed.Porosity;  
     
     %% Update bed composition
     if Inputs.Sed.SedType == 2
@@ -35,8 +35,8 @@ while T < Inputs.Time.EndTime
                         (max(Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.Fi; % Fractional volumetric flux rate into active layer from subsurface [m3/s/m]
         % Fi = (Fi * DA - SubSurfFlux_i) / DA;
         Cell.Fi = (Cell.Fi .* (Cell.Width * ones(1,Frac.NFracs)) * Inputs.Sed.DA + ...
-                               (Cell.Delta_i_tot + Cell.SubSurfFlux_i) * Inputs.Time.dT ) ./ ...
-                               (Inputs.Sed.DA * (Cell.Width * ones(1,Frac.NFracs)));
+                   (Cell.Delta_i_tot + Cell.SubSurfFlux_i) * Inputs.Time.dT ) ./ ...
+                  (Inputs.Sed.DA * (Cell.Width * ones(1,Frac.NFracs)));
         Cell.Fi(Cell.Fi<0) = 0;
         Cell.Fi = Cell.Fi ./ (sum(Cell.Fi,2) * ones(1,Frac.NFracs)); % To prevent small errors propogating?
     end
@@ -91,7 +91,7 @@ while T < Inputs.Time.EndTime
     Cell.qsiN_flow = Cell.qsiTot_flow .* ((Cell.Tau_N ./ Cell.Tau_Tot) * ones(1, Frac.NFracs));
     Cell.qsiN_flow(isnan(Cell.qsiN_flow)) = 0;
 
-    % Calculate cell edge parameters
+    %% Calculate cell edge parameters
     if Inputs.Opt.UpwindBedload % Upwind bedload
         C2E_Weights = (Cell.Tau_N(1:end-1) + Cell.Tau_N(2:end)) > 0;
     else % Central
@@ -108,27 +108,39 @@ while T < Inputs.Time.EndTime
     Edge.ThetaCrit_i = Centre2Edge(Cell.ThetaCrit_i, C2E_Weights);
     Edge.Dg_m = Centre2Edge(Cell.Dg_m, C2E_Weights);
     
-    % Calculate sediment transport due to bed slope
+    %% Calculate sediment transport due to bed slope
     Edge.Slope = [0; (Cell.Z(2:end) - Cell.Z(1:end-1)) ./ (Cell.N(2:end) - Cell.N(1:end-1)); 0];
     Edge.qsiN_slope = BedSlope(Inputs, Edge, Frac);
     
-    % Erosion/deposition due to flow and associated effects (i.e. everything except bank erosion)
+    %% Fractional erosion/deposition due to flow and associated effects (i.e. everything except bank erosion)
     Cell.Delta_i_flow = Edge.qsiN_flow(1:end-1,:) - Edge.qsiN_flow(2:end,:); % Fractional volumetric flux rate into cell from neighboring cells due to flow [m3/s/m]
     Cell.Delta_i_slope = Edge.qsiN_slope(1:end-1,:) - Edge.qsiN_slope(2:end,:);
+    Cell.Delta_flow = sum(Cell.Delta_i_flow, 2); % Total (i.e. all fractions) flux into cell from neighbouring cells due to flow
+    Cell.Delta_slope = sum(Cell.Delta_i_slope, 2);
     
-    % Calculate sediment flux rate due to bank erosion
+    %% Calculate sediment flux rate due to bank erosion
     % Identify banks
     Edge.IsBank = IdentifyBanks(Inputs.Opt.Bank.ID, Cell, Edge);
     
     % Apply bank erosion stencil
     Bank = BankStencil(Inputs.Opt.Bank.Stencil, Cell, Edge);
     
-    % Calculate flux
+    % Calculate bank erosion flux
     Cell.Delta_i_bank = BankFlux(Inputs.Opt.Bank.Flux, Cell, Edge, Frac, Inputs.Time.dT, Bank);
-    Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope + Cell.Delta_i_bank;
-    Cell.Delta_tot = sum(Cell.Delta_i_tot, 2); % total volumetric flux rate into cell from neighboring cells [m3/s/m]
+    Cell.Delta_bank = sum(Cell.Delta_i_bank, 2);
     
-    % Outputs
+    % Calculate total erosion/deposition (including bank erosion)
+    Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope + Cell.Delta_i_bank;
+    if Inputs.Opt.Bank.Flux.StoredBE
+        % Store bank erosion if option selected
+        Cell.Delta_store = StoreErosion(Inputs, Cell, Bank);
+        Cell.EroStore = Cell.EroStore - Cell.Delta_store * Inputs.Time.dT;
+        Cell.Delta_tot = Cell.Delta_flow + Cell.Delta_slope + Cell.Delta_bank + Cell.Delta_store;
+    else
+        Cell.Delta_tot = Cell.Delta_flow + Cell.Delta_slope + Cell.Delta_bank;
+    end
+    
+    %% Outputs
     if T >= PlotT + Inputs.Outputs.PlotInt
         PlotT = PlotT + Inputs.Outputs.PlotInt;
         UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
