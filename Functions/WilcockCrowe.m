@@ -8,7 +8,8 @@ Delta = (Inputs.Sed.Rho_S-Inputs.Hyd.Rho_W)/Inputs.Hyd.Rho_W;
 TauStar_rm = 0.021 + 0.015 * exp(-20 * Fs);
 Tau_rm = TauStar_rm * (Inputs.Sed.Rho_S - Inputs.Hyd.Rho_W) * Inputs.Hyd.g .* Cell.Dg_m;
 %Tau_ri = ((1 ./ Cell.Dg_m) * Frac.Di_m).^b .* (Tau_rm*ones(1,Frac.NFracs));
-Tau_ri = HidExp .* (Tau_rm*ones(1,Frac.NFracs));
+Tau_ri = HidExp .* (Tau_rm*ones(1,Frac.NFracs)) .* ...
+        (ones(Cell.NCells,1)*Frac.Di_m) ./ (Cell.Dg_m*ones(1,Frac.NFracs));
 Phi = (Cell.Tau_Tot*ones(1,Frac.NFracs)) ./ Tau_ri;
 
 WiStar = zeros(Cell.NCells, Frac.NFracs);

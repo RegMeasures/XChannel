@@ -2,7 +2,7 @@ function [qsiTot_flow, ThetaCrit_i] = BedLoad(Inputs, Cell, Frac)
 % Calculate fractional volumetric bedload transport due to flow (in cell centres)
 
 %% Apply hiding and exposure fuction to calculate fractional critical shear stress
-HidExp = HidingFunction(Inputs.Opt.ST, Cell, Frac, Cell.Dg_m);
+HidExp = HidingFunction(Inputs.Opt.ST, Cell, Frac);
 
 %% Apply sediment transport formula
 switch Inputs.Opt.ST.Formula
