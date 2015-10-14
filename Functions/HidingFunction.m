@@ -15,6 +15,9 @@ switch Options.HidExp
         DiDg = (ones(Cell.NCells,1)*Frac.Di_m) ./ (Cell.Dg_m*ones(1,Frac.NFracs));
         b = 0.67 ./ (1 + exp(1.5 - DiDg));
         HidExp = DiDg.^(b-1);
+    case 3
+        % Parker Klingeman & McLean
+        HidExp =  ((Cell.Dg_m*ones(1,Frac.NFracs)) ./ (ones(Cell.NCells,1)*Frac.Di_m)).^Options.Gamma;
 end
 
 end

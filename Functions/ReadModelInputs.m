@@ -70,12 +70,17 @@ switch Inputs.Opt.ST.Formula
 end
 
 % Hiding and exposure correction
-if Inputs.Opt.ST.Formula == 2
-    % W-C formula, use built in hiding and exposure function
-    Inputs.Opt.ST.HidExp = 2;
-else
-    % Other bedload formula, use stand-alone hiding and exposure function
-    Inputs.Opt.ST.HidExp = GetInputParameter(C,'HidExp',0);
+Inputs.Opt.ST.HidExp = GetInputParameter(C,'HidExp',0);
+switch Inputs.Opt.ST.HidExp
+    case 0
+        fprintf('No hiding function being used\n')
+    case 1
+        fprintf('Ashida and Michiue hiding function selected\n')
+    case 2
+        fprintf('Wilcock and Crowe hiding function selected\n')
+    case 3
+        fprintf('Parker Klingeman and McLean hiding function selected\n')
+        Inputs.Opt.ST.Gamma = GetInputParameter(C,'Gamma');
 end
 
 % Bedslope effects

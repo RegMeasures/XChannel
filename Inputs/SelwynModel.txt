@@ -42,10 +42,12 @@ MPMexponent = 1.6            % Coefficient in MPM formula possible values are:
                              %   1.5 = original MPM '48 and also Wong and Parker 2006 eq. 24
                              %   1.6 = correction suggested in Wong and Parker 2006 eq. 22 (default)
 
-HidExp    = 1                % Hiding and exposure formulation
+HidExp    = 3                % Hiding and exposure formulation
                              %   0 = No hiding or exposure correction
                              %   1 = Ashida & Michiue formulation
                              %   2 = Wilcock and Crowe (automatically selected if STFormula = 2)
+                             %   3 = Parker Klingeman and McLean (needs: Gamma)
+Gamma     = 0.8              % Gamma exponent for Parker Klingeman & McLean hiding function (for HidExp = 3)
                              
 % Transverse bed slope effects on sediment transport
 BedSlope  = 1                % Bed slope formulation (default = 0)
