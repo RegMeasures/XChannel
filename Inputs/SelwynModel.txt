@@ -111,3 +111,4 @@ EndTime   = 340000           % [s]
 %% ============================== Outputs =================================
 DiagInt   = 720              % Diagnostics update interval [s] (default = DT)
 PlotInt   = 720              % Plot update interval [s] (default = DT)
+VideoOut  = 1                % Output cross-section video (default = 0 i.e. no video)

@@ -1,19 +1,9 @@
-function [Inputs] = ReadModelInputs(FileName,PathName)
+function [Inputs] = ReadModelInputs(FileName,FilePath)
 % Read in XChannelModel model input file to structure array
 % [Inputs] = ReadModelInputs(FileName,PathName)
-% both inputs are optional
 
-%% Get file name and path if not specified as input
-if ~exist('FileName','var')
-    [FileName,PathName] = uigetfile('*.txt','Select the model input file');
-    if isequal(FileName,0)
-        error('User selected Cancel')
-    end
-end
-
-if exist('PathName','var')
-    addpath(PathName)
-end
+Inputs.FileName = FileName;
+Inputs.FilePath = FilePath;
 
 %% Read the model input file into a cell array
 fid = fopen(FileName);
@@ -170,9 +160,10 @@ Inputs.Time.dT = GetInputParameter(C,'dT');
 Inputs.Time.StartTime = GetInputParameter(C,'StartTime',0);
 Inputs.Time.EndTime = GetInputParameter(C,'EndTime');
 
-% Outputs
+%% Outputs
 Inputs.Outputs.DiagInt = GetInputParameter(C,'DiagInt',Inputs.Time.dT);
 Inputs.Outputs.PlotInt = GetInputParameter(C,'PlotInt',Inputs.Time.dT);
+Inputs.Outputs.VideoOut = GetInputParameter(C,'VideoOut',0);
 
 end
 

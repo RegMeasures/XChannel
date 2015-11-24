@@ -1,12 +1,29 @@
+function XChannelModel(FileName)
 % Single cross-section 1D (cross-channel) morphological model
+% FileName is optional name(and path) of input file
+% If FileName not specified user will be prompted to select file
 % Richard Measures 2015
-
 
 %% Program setup
 addpath('Functions')
 
+%% Get file name and path if not specified as input
+if ~exist('FileName','var')
+    [FileName,FilePath] = uigetfile('*.txt','Select the model input file');
+    if isequal(FileName,0)
+        error('User selected Cancel')
+    end
+else
+    [FilePath,FileName,ext] = fileparts(FileName);
+    FileName = [FileName ext];
+end
+
+if exist('PathName','var')
+    addpath(FilePath)
+end
+
 %% Read model data and options from intput file
-[Inputs] = ReadModelInputs; %('TestModel.txt','C:\Projects\Research\BankErosionMatlab\Trunk\Inputs\');
+[Inputs] = ReadModelInputs(FileName,FilePath);
 
 %% Initialise the main variable structs
 [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs);
@@ -16,8 +33,15 @@ XsFigure = PlotXS(Cell,Edge,Bank,NaN,0,Inputs.Hyd.Flow);
 PlotT = Inputs.Time.StartTime;
 DiagT = Inputs.Time.StartTime;
 
+%% Open file for video output
+if Inputs.Outputs.VideoOut == 1;
+    vidObj = VideoWriter(fullfile(FilePath,Inputs.FileName(1:end-4)),'MPEG-4');
+    open(vidObj);
+end
+
 %% Main Loop
 T = Inputs.Time.StartTime - Inputs.Time.dT;
+FrameNo = 0;
 
 while T < Inputs.Time.EndTime  
     %% Move to next timestep
@@ -141,15 +165,33 @@ while T < Inputs.Time.EndTime
     end
     
     %% Outputs
+    
     if T >= PlotT + Inputs.Outputs.PlotInt
+        % Update plot
         PlotT = PlotT + Inputs.Outputs.PlotInt;
         UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
+        % Write video frame
+        if Inputs.Outputs.VideoOut == 1
+            Frame = getframe(XsFigure.FigureH,[55, 393, 906, 382]);
+            writeVideo(vidObj,Frame);
+        end
     end
+    
+    % Diagnistics output
     if T >= DiagT + Inputs.Outputs.DiagInt
         DiagT = DiagT + Inputs.Outputs.DiagInt;
         fprintf('T=%gs, Q=%gm^3/s, q_s=%.2em3/s\n', T, Inputs.Hyd.Flow, sum(Cell.qsS_flow_kg))
     end
 end
 
-%% Final outputs
-UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
+%% Final tidying up
+% UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
+
+% Close video file
+if Inputs.Outputs.VideoOut == 1
+    close(vidObj)
+end
+
+% Close figure
+close(XsFigure.FigureH);
+

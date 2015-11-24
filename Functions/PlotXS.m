@@ -48,16 +48,18 @@ StencilPlotY = StencilPlotY(:);
 XsFigure.BankStencilH = plot(StencilPlotX, StencilPlotY, 'ro:');
 
 % Labels and formatting etc
-set(XsFigure.XsAxesH,'XTickLabel','')
+%set(XsFigure.XsAxesH,'XTickLabel','')
 ylabel(XsFigure.BedVelPlotH(1),'Elevation (m)');
 ylabel(XsFigure.BedVelPlotH(2),'Velocity (m/s)');
 %legend('Initial bed','Current bed','Water level',...
 %       'Location','SouthOutside','Orientation','horizontal');
 XScale = Edge.N([1,end]);
 set(XsFigure.BedVelPlotH(1),'XLim', XScale,'YColor','k','XGrid','on');
-set(XsFigure.BedVelPlotH(2),'XLim', XScale,'YLimMode','auto','YTickMode','auto');
+set(XsFigure.BedVelPlotH(2),'XLim', XScale,'YLim',[0,3],'YTickMode','auto');% 'YLimMode','auto');
 set(XsFigure.BedLineH,'Color','k','LineWidth',1)
 XsFigure.XsPlotTitleH = title(sprintf('Model time = %.0f s, Flow = %.1f, WL = %.2f',T , Flow, WL));
+
+xlabel('Distance across section (m)');
 
 hold off
 
