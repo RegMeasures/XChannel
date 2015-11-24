@@ -1,9 +1,9 @@
-function [Inputs] = ReadModelInputs(FileName,FilePath)
+function [Inputs] = ReadModelInputs(FileName)
 % Read in XChannelModel model input file to structure array
 % [Inputs] = ReadModelInputs(FileName,PathName)
 
 Inputs.FileName = FileName;
-Inputs.FilePath = FilePath;
+FilePath = fileparts(FileName);
 
 %% Read the model input file into a cell array
 fid = fopen(FileName);
@@ -11,12 +11,22 @@ C = textscan(fid, '%[^= ] %*[= ] %s', 'CommentStyle', '%');
 fclose(fid);
 
 %% Read in hydraulics parameters
-Inputs.Hyd.InitialGeometry = GetInputParameter(C,'Geometry');
-[Inputs.Hyd.Flow, Inputs.Hyd.FlowType] = GetInputParameter(C,'Flow');
+
+% Geometry
+[Inputs.Hyd.InitialGeometry, Type] = GetInputParameter(C,'Geometry',[],FilePath);
+if Type ~= 2
+    error('Geometry file %s not found',Inputs.Hyd.InitialGeometry)
+end
+
+% Flow
+[Inputs.Hyd.Flow, Inputs.Hyd.FlowType] = GetInputParameter(C,'Flow',[],FilePath);
 if Inputs.Hyd.FlowType == 2 % Flow from timeseries file
     Inputs.Hyd.FlowTS = Inputs.Hyd.Flow;
     Inputs.Hyd.Flow = Inputs.Hyd.FlowTS(1,2);
+elseif Inputs.Hyd.FlowType == 3 % Missing file or badly formed number?
+    error('Flow file %s not found',Inputs.Hyd.Flow)
 end
+
 Inputs.Hyd.Slope = GetInputParameter(C,'Slope');
 Inputs.Hyd.Roughness = GetInputParameter(C,'Roughness');
 Inputs.Hyd.Radius = GetInputParameter(C,'Radius');
@@ -28,7 +38,11 @@ Inputs.Hyd.Rho_W = GetInputParameter(C,'RhoW',1000);
 Inputs.Hyd.g = GetInputParameter(C,'Gravity',9.81);
 
 %% Read in sediment parameters
-[Inputs.Sed.SedSize, Inputs.Sed.SedType] = GetInputParameter(C,'SedSize');
+[Inputs.Sed.SedSize, Inputs.Sed.SedType] = GetInputParameter(C,'SedSize',[],FilePath);
+if Inputs.Sed.SedType == 3;
+    error('Sediment file %s not found',Inputs.Sed.SedSize)
+end
+
 Inputs.Sed.Rho_S = GetInputParameter(C,'RhoS',2650);
 Inputs.Sed.Porosity = GetInputParameter(C,'Porosity',0.4);
 Inputs.Sed.DA = GetInputParameter(C,'DA');                                 % Active layer thickness [m]

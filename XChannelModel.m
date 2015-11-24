@@ -5,7 +5,9 @@ function XChannelModel(FileName)
 % Richard Measures 2015
 
 %% Program setup
-addpath('Functions')
+if ~isdeployed
+    addpath('Functions')
+end
 
 %% Get file name and path if not specified as input
 if ~exist('FileName','var')
@@ -13,17 +15,11 @@ if ~exist('FileName','var')
     if isequal(FileName,0)
         error('User selected Cancel')
     end
-else
-    [FilePath,FileName,ext] = fileparts(FileName);
-    FileName = [FileName ext];
-end
-
-if exist('PathName','var')
-    addpath(FilePath)
+    FileName = fullfile(FilePath,FileName);
 end
 
 %% Read model data and options from intput file
-[Inputs] = ReadModelInputs(FileName,FilePath);
+[Inputs] = ReadModelInputs(FileName);
 
 %% Initialise the main variable structs
 [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs);
@@ -35,13 +31,12 @@ DiagT = Inputs.Time.StartTime;
 
 %% Open file for video output
 if Inputs.Outputs.VideoOut == 1;
-    vidObj = VideoWriter(fullfile(FilePath,Inputs.FileName(1:end-4)),'MPEG-4');
+    vidObj = VideoWriter(FileName(1:end-4),'MPEG-4');
     open(vidObj);
 end
 
 %% Main Loop
 T = Inputs.Time.StartTime - Inputs.Time.dT;
-FrameNo = 0;
 
 while T < Inputs.Time.EndTime  
     %% Move to next timestep

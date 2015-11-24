@@ -10,10 +10,10 @@ function [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs)
 Cell.NCells = size(Inputs.Hyd.InitialGeometry,1);
 Edge.NEdges = Cell.NCells + 1;
 Cell.N = Inputs.Hyd.InitialGeometry(:,1);
-Edge.N = [Cell.N(1) - (Cell.N(2) - Cell.N(1)) / 2;
-               (Cell.N(1:end-1) + Cell.N(2:end)) / 2;
-               Cell.N(end) + (Cell.N(end) - Cell.N(end-1)) / 2];
-Cell.Width = Edge.N(2:end) - Edge.N(1:end-1);
+Edge.N = [Cell.N(1,1) - (Cell.N(2,1) - Cell.N(1,1)) / 2;
+               (Cell.N(1:end-1,1) + Cell.N(2:end,1)) / 2;
+               Cell.N(end,1) + (Cell.N(end,1) - Cell.N(end-1,1)) / 2];
+Cell.Width = Edge.N(2:end,1) - Edge.N(1:end-1,1);
 Cell.Z = Inputs.Hyd.InitialGeometry(:,2);
 Cell.Zinitial = Inputs.Hyd.InitialGeometry(:,2);
 if size(Inputs.Hyd.InitialGeometry,2) >= 3

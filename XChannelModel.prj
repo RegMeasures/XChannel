@@ -1,0 +1,118 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration build-checksum="1561172944" file="C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel.prj" location="C:\Projects\Research\BankErosionMatlab\Trunk" name="XChannelModel" preferred-package-location="C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>XChannelModel</param.appname>
+    <param.icon />
+    <param.icons />
+    <param.version>1.0</param.version>
+    <param.authnamewatermark>Richard Measures</param.authnamewatermark>
+    <param.email>richard.measures@niwa.co.nz</param.email>
+    <param.company>NIWA</param.company>
+    <param.summary>Single cross-section morphological model simulating cross-channel processes</param.summary>
+    <param.description />
+    <param.screenshot />
+    <param.guid />
+    <param.net.saved.interface />
+    <param.installpath.string>\NIWA\XChannelModel\</param.installpath.string>
+    <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
+    <param.logo />
+    <param.install.notes />
+    <param.intermediate>${PROJECT_ROOT}\XChannelModel\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\XChannelModel\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\XChannelModel\for_redistribution</param.output>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options />
+    <param.embed.ctf>true</param.embed.ctf>
+    <param.target.type>subtarget.standalone</param.target.type>
+    <param.support.packages />
+    <param.required.mcr.products>
+      <item>35000</item>
+      <item>35010</item>
+    </param.required.mcr.products>
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>false</param.windows.command.prompt>
+    <param.create.log>false</param.create.log>
+    <param.log.file />
+    <unset>
+      <param.icon />
+      <param.icons />
+      <param.version />
+      <param.description />
+      <param.screenshot />
+      <param.guid />
+      <param.net.saved.interface />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.intermediate />
+      <param.files.only />
+      <param.output />
+      <param.enable.clean.build />
+      <param.user.defined.mcr.options />
+      <param.embed.ctf />
+      <param.target.type />
+      <param.support.packages />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.web.mcr.name />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.create.log />
+      <param.log.file />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\XChannelModel.m</file>
+    </fileset.main>
+    <fileset.resources>
+      <file>${PROJECT_ROOT}\Functions\BankFlux.m</file>
+      <file>${PROJECT_ROOT}\Functions\BankStencil.m</file>
+      <file>${PROJECT_ROOT}\Functions\BedLoad.m</file>
+      <file>${PROJECT_ROOT}\Functions\BedSlope.m</file>
+      <file>${PROJECT_ROOT}\Functions\bisection.m</file>
+      <file>${PROJECT_ROOT}\Functions\CalcQ.m</file>
+      <file>${PROJECT_ROOT}\Functions\Centre2Edge.m</file>
+      <file>${PROJECT_ROOT}\Functions\GetInputParameter.m</file>
+      <file>${PROJECT_ROOT}\Functions\HidingFunction.m</file>
+      <file>${PROJECT_ROOT}\Functions\IdentifyBanks.m</file>
+      <file>${PROJECT_ROOT}\Functions\InitialiseVariables.m</file>
+      <file>${PROJECT_ROOT}\Functions\MeyerPeterMuller.m</file>
+      <file>${PROJECT_ROOT}\Functions\PlotXS.m</file>
+      <file>${PROJECT_ROOT}\Functions\ReadModelInputs.m</file>
+      <file>${PROJECT_ROOT}\Functions\SetQ.m</file>
+      <file>${PROJECT_ROOT}\Functions\StoreErosion.m</file>
+      <file>${PROJECT_ROOT}\Functions\UpdateXsPlot.m</file>
+      <file>${PROJECT_ROOT}\Functions\WilcockCrowe.m</file>
+    </fileset.resources>
+    <fileset.package />
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}\XChannelModel\for_testing" name="readme.txt" optional="true">C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\XChannelModel\for_testing" name="XChannelModel.exe" optional="false">C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_testing\XChannelModel.exe</file>
+      <file location="${PROJECT_ROOT}\XChannelModel\for_testing" name="splash.png" optional="false">C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_testing\splash.png</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2015a</root>
+      <toolboxes />
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>6.1</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
