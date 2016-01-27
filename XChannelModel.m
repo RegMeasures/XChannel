@@ -22,20 +22,13 @@ if ~isdeployed
     addpath('Functions')
 end
 
-%% Read input file if required
-if ~isstruct(Inputs)
-    FileName = Inputs;
-    % Get file name and path if not specified as input
-    if ~exist('FileName','var')
-        [FileName,FilePath] = uigetfile('*.txt','Select the model input file');
-        if isequal(FileName,0)
-            error('User selected Cancel')
-        end
-        FileName = fullfile(FilePath,FileName);
+%% Read model data and options from model input file if required
+if ~exist('Inputs','var')
+        [Inputs] = ReadModelInputs;
+else
+    if ~isstruct(Inputs)
+        [Inputs] = ReadModelInputs(Inputs);
     end
-
-    % Read model data and options from intput file
-    [Inputs] = ReadModelInputs(FileName);
 end
 
 %% Initialise the main variable structs
@@ -163,6 +156,9 @@ while T < Inputs.Time.EndTime
     
     % Apply bank erosion stencil
     Bank = BankStencil(Inputs.Opt.Bank.Stencil, Cell, Edge);
+    
+    % Apply active bank trigger
+    Bank.Active = TriggerBanks(Inputs.Opt.Bank.Trigger, Cell, Bank);
     
     % Calculate bank erosion flux
     Cell.Delta_i_bank = BankFlux(Inputs.Opt.Bank.Flux, Cell, Edge, Frac, Inputs.Time.dT, Bank);

@@ -66,8 +66,8 @@ BankID    = 3                % Bank identification approach (default = 0)
                              %   0 = No bank ID (i.e. everywhere is a bank)
                              %   1 = Wet/dry interface
                              %   2 = Transporting/non-transporting
-                             %   3 = Bank height (needs: BHEIGHT)
-                             %   4 = Bank slope (needs: BSLOPE)
+                             %   3 = Bank height (needs: BHeight)
+                             %   4 = Bank slope (needs: BSlope)
 BHeight   = 1                % Bank height threshold [m] (for BankId 3)
 BSlope    = 1                % Bank slope threshold [m/m] (for BankId 4)
 
@@ -82,6 +82,13 @@ BotCellLim = 3               % Search limit for bank bottom specified in no of c
 TopDistLim = 0.1             % Search limit for bank top specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
 BotDistLim = 0.1             % Search limit for bank bottom specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
 
+% Active bank trigger
+BTrigger  = 0                % Active bank trigger (default = 0)
+                             %   0 = No trigger (all banks are active)
+                             %   1 = Threshold height trigger (needs: BTHeight)
+                             %   2 = Degrading toe trigger (i.e. active if toe is degrading due to slope & flow effect)
+BTHeight  = 1                % Bank height threshold (for BTrigger 1)
+
 % Bank erosion flux calculation
 BankFlux  = 3                % Bank erosion flux calculation approach (default = 0)
                              %   0 = No Bank erosion flux
@@ -93,7 +100,7 @@ Repose    = 1                % Limiting slope [m/m] (for BankFlux 1)
 SlipRatio = 1                % Proportion of excess material slipped per timestep [0-1] (default = 1, for BankFlux 1)
 ThetSD    = 0.2              % Bank erosion flux as a proportion of bank toe erosion rate (default = 0.5, for BankFlux 2)
 QsBeRatio = 0.05             % Bank erosion flux as a proportion of bank toe transport rate (for BankFlux 3)
-BErodibility = 0.005         % Bank erosion flux as a proportion of (bank toe transport rate * slope)
+BErodibility = 0.005         % Bank erosion flux as a proportion of bank toe transport rate * slope (for BankFlux 4)
 StencilMix = 0               % Mix sediment through active layer when transporting across stencil
                              %   0 = No mixing: i.e. material is transported from bank top directly to bank toe.
                              %   1 = Mix: i.e. material is mixed through the active layer of each cell between top and toe.

@@ -2,10 +2,20 @@ function [Inputs] = ReadModelInputs(FileName)
 % Read in XChannelModel model input file to structure array
 % [Inputs] = ReadModelInputs(FileName,PathName)
 
+%% Get file name and path if not specified as input
+if ~exist('FileName','var')
+    [FileName,FilePath] = uigetfile('*.txt','Select the model input file');
+    if isequal(FileName,0)
+        error('User selected Cancel')
+    end
+    FileName = fullfile(FilePath,FileName);
+end
+
+%% Read the model input file into a cell array
+
 Inputs.FileName = FileName;
 FilePath = fileparts(FileName);
 
-%% Read the model input file into a cell array
 fid = fopen(FileName);
 C = textscan(fid, '%[^= ] %*[= ] %s', 'CommentStyle', '%');
 fclose(fid);
@@ -110,14 +120,14 @@ switch Inputs.Opt.Bank.ID.Approach
     case 0 % no additional inputs required
         fprintf('No bank ID approach being used (i.e. everywhere is a bank)\n')
     case 1
-        fprintf('Wet/dry bank identification being used\n')
+        fprintf('Wet/dry bank identification selected\n')
     case 2
-        fprintf('Transporting/non-transporting bank identification being used\n')
+        fprintf('Transporting/non-transporting bank identification selected\n')
     case 3
-        fprintf('Bank height bank identification approach being used\n')
+        fprintf('Bank height bank identification approach selected\n')
         Inputs.Opt.Bank.ID.BHeight = GetInputParameter(C,'BHeight');
     case 4
-        fprintf('Bank slope bank identification approach being used\n')
+        fprintf('Bank slope bank identification approach selected\n')
         Inputs.Opt.Bank.ID.BSlope = GetInputParameter(C,'BSlope');
 end
 
@@ -142,6 +152,18 @@ end
 if Inputs.Opt.Bank.Stencil.Bottom ~=0
     Inputs.Opt.Bank.Stencil.BotCellLim = GetInputParameter(C,'BotCellLim',1);
     Inputs.Opt.Bank.Stencil.BotDistLim = GetInputParameter(C,'BotDistLim',1);
+end
+
+% Bank trigger
+Inputs.Opt.Bank.Trigger.BTrigger = GetInputParameter(C,'BTrigger',0);
+switch Inputs.Opt.Bank.Trigger.BTrigger
+    case 0
+        fprintf('No bank trigger approach (i.e. every bank is active)\n')
+    case 1
+        fprintf('Threshold height bank trigger selected\n')
+        Inputs.Opt.Bank.Trigger.BTHeight = GetInputParameter(C,'BTHeight');
+    case 2
+        fprintf('Degrading toe bank trigger selected\n')
 end
 
 % Bank flux calculation

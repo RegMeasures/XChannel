@@ -1,10 +1,15 @@
 function [IsBank] = IdentifyBanks(Options, Cell, Edge)
-% Identify bank using selected bank identification routine
+% Identify active banks using selected bank identification routine
+%
+% Left banks identified with +1, Right banks with -1
 
+% Bank ID
 switch Options.Approach
     case 0 
         % Everywhere is a bank (no bank ID routine)
-        IsBank = ones(Cell.NCells-1, 1);
+        %IsBank = ones(Cell.NCells-1, 1);
+        BankHeight = Cell.Z(2:end) - Cell.Z(1:end-1);
+        IsBank = (BankHeight <= 0) - (BankHeight > 0);
     case 1 
         % Wet/dry bank identification
         IsBank = Cell.Wet(2:end) - Cell.Wet(1:end-1);
