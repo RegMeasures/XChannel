@@ -1,5 +1,5 @@
 function [Delta_store] = StoreErosion(Inputs, Cell, Bank)
-% Calculate change in stored erosion volume [m3/m]
+% Calculate rate of change in stored erosion volume over timestep [m3/m/s]
 % Erosion stored until sufficient available to bank top cell to level of
 % bank toe cell.
 Delta_store = zeros(Cell.NCells,1);

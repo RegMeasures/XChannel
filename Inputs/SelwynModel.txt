@@ -17,7 +17,7 @@ RhoW      = 1000             % Fluid density [kg/m3] (default 1000)
 Gravity   = 9.81             % Gravitational constant [m/s2] (default = 9.81)
 
 %% =============================== Sediment ===============================
-SedSize   = SelwynSedFrac.csv % Either numeric D50 for single size [m], or csv file with 3 columns: fraction D50 [m], initial condition SurfaceFi [dimensionless], IC BulkFi [dimensionless]
+SedSize   = 0.027 %SelwynSedFrac.csv % Either numeric D50 for single size [m], or csv file with 3 columns: fraction D50 [m], initial condition SurfaceFi [dimensionless], IC BulkFi [dimensionless]
 RhoS      = 2650             % Sed density, either single global value or ref to to file containing fractional densities [kg/m3]
 Porosity  = 0.4              % Porosity of bulk bed sediment [dimensionless]
 DA        = 0.2              % Active layer thickness [m] (no effect if uniform sediment)
@@ -85,9 +85,9 @@ BotDistLim = 0.1             % Search limit for bank bottom specified in distanc
 % Bank erosion flux calculation
 BankFlux  = 3                % Bank erosion flux calculation approach (default = 0)
                              %   0 = No Bank erosion flux
-                             %   1 = Flux/dT is proportional to excess slope (needs: REPOSE, SLIPRATE)
-                             %   2 = Flux rate is proportional to bank toe erosion rate
-                             %   3 = Flux rate is proportional to bank toe transport rate
+                             %   1 = Flux/dT is proportional to excess slope (needs: Repose, SlipRatio)
+                             %   2 = Flux rate is proportional to bank toe erosion rate (needs: ThetSD)
+                             %   3 = Flux rate is proportional to bank toe transport rate (needs: QsBeRatio)
                              %   4 = Flux rate is proportional to (bank toe transport rate * slope)
 Repose    = 1                % Limiting slope [m/m] (for BankFlux 1)
 SlipRatio = 1                % Proportion of excess material slipped per timestep [0-1] (default = 1, for BankFlux 1)
@@ -105,10 +105,10 @@ StoredBE = 0                 % Store bank erosion until top can be lowered to le
 
 %% =============================== Times ==================================
 dT        = 60               % Timestep [s]
-StartTime = 0 %60000            % [s] (default = 0)
-EndTime   = 340000           % [s]
+StartTime = 60000  %0        % [s] (default = 0)
+EndTime   = 200000 %340000   % [s]
 
 %% ============================== Outputs =================================
-DiagInt   = 720              % Diagnostics update interval [s] (default = DT)
-PlotInt   = 720              % Plot update interval [s] (default = DT)
-VideoOut  = 1                % Output cross-section video (default = 0 i.e. no video)
+DiagInt   = 720              % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
+PlotInt   = 720              % Plot update interval [s] (default = DT, 0 = no diagnostics output)
+VideoOut  = 1                % Output cross-section video. Note: PlotInt must be > 0 for video output.(default = 0 i.e. no video) 

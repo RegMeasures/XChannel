@@ -1,5 +1,18 @@
-function XChannelModel(FileName)
+function [FinalXS] = XChannelModel(Inputs)
 % Single cross-section 1D (cross-channel) morphological model
+%
+% [FinalXS] = XChannelModel
+%     Run model prompting user to select input file
+%
+% [FinalXS] = XChannelModel(FileName)
+%     Run model with inputs from Filename where filename is a text file in
+%     standard format
+%
+% [FinalXS] = XChannelModel(Inputs)
+%     Run model with inputs contained in struct created by ReadModelInputs
+%
+% FinalXS is the final cross-section profile at the end of the simulation.
+%
 % FileName is optional name(and path) of input file
 % If FileName not specified user will be prompted to select file
 % Richard Measures 2015
@@ -9,29 +22,36 @@ if ~isdeployed
     addpath('Functions')
 end
 
-%% Get file name and path if not specified as input
-if ~exist('FileName','var')
-    [FileName,FilePath] = uigetfile('*.txt','Select the model input file');
-    if isequal(FileName,0)
-        error('User selected Cancel')
+%% Read input file if required
+if ~isstruct(Inputs)
+    FileName = Inputs;
+    % Get file name and path if not specified as input
+    if ~exist('FileName','var')
+        [FileName,FilePath] = uigetfile('*.txt','Select the model input file');
+        if isequal(FileName,0)
+            error('User selected Cancel')
+        end
+        FileName = fullfile(FilePath,FileName);
     end
-    FileName = fullfile(FilePath,FileName);
-end
 
-%% Read model data and options from intput file
-[Inputs] = ReadModelInputs(FileName);
+    % Read model data and options from intput file
+    [Inputs] = ReadModelInputs(FileName);
+end
 
 %% Initialise the main variable structs
 [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs);
 
 %% Set up cross-section plot
-XsFigure = PlotXS(Cell,Edge,Bank,NaN,0,Inputs.Hyd.Flow);
+if Inputs.Outputs.PlotInt > 0
+    XsFigure = PlotXS(Cell,Edge,Bank,NaN,0,Inputs.Hyd.Flow);
+end    
 PlotT = Inputs.Time.StartTime;
 DiagT = Inputs.Time.StartTime;
 
+
 %% Open file for video output
-if Inputs.Outputs.VideoOut == 1;
-    vidObj = VideoWriter(FileName(1:end-4),'MPEG-4');
+if Inputs.Outputs.VideoOut == 1 && Inputs.Outputs.PlotInt > 0;
+    vidObj = VideoWriter(Inputs.FileName(1:end-4),'MPEG-4');
     open(vidObj);
 end
 
@@ -148,10 +168,10 @@ while T < Inputs.Time.EndTime
     Cell.Delta_i_bank = BankFlux(Inputs.Opt.Bank.Flux, Cell, Edge, Frac, Inputs.Time.dT, Bank);
     Cell.Delta_bank = sum(Cell.Delta_i_bank, 2);
     
-    % Calculate total erosion/deposition (including bank erosion)
+    %% Calculate total erosion/deposition
     Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope + Cell.Delta_i_bank;
     if Inputs.Opt.Bank.Flux.StoredBE
-        % Store bank erosion if option selected
+        % Store bank erosion if intermittent update option selected
         Cell.Delta_store = StoreErosion(Inputs, Cell, Bank);
         Cell.EroStore = Cell.EroStore - Cell.Delta_store * Inputs.Time.dT;
         Cell.Delta_tot = Cell.Delta_flow + Cell.Delta_slope + Cell.Delta_bank + Cell.Delta_store;
@@ -161,7 +181,7 @@ while T < Inputs.Time.EndTime
     
     %% Outputs
     
-    if T >= PlotT + Inputs.Outputs.PlotInt
+    if T >= PlotT + Inputs.Outputs.PlotInt && Inputs.Outputs.PlotInt > 0
         % Update plot
         PlotT = PlotT + Inputs.Outputs.PlotInt;
         UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
@@ -173,7 +193,7 @@ while T < Inputs.Time.EndTime
     end
     
     % Diagnistics output
-    if T >= DiagT + Inputs.Outputs.DiagInt
+    if T >= DiagT + Inputs.Outputs.DiagInt && Inputs.Outputs.DiagInt > 0
         DiagT = DiagT + Inputs.Outputs.DiagInt;
         fprintf('T=%gs, Q=%gm^3/s, q_s=%.2em3/s\n', T, Inputs.Hyd.Flow, sum(Cell.qsS_flow_kg))
     end
@@ -182,11 +202,17 @@ end
 %% Final tidying up
 % UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
 
-% Close video file
-if Inputs.Outputs.VideoOut == 1
-    close(vidObj)
+% Close figure
+if Inputs.Outputs.PlotInt > 0
+    close(XsFigure.FigureH);
+    % Close video file
+    if Inputs.Outputs.VideoOut == 1
+        close(vidObj)
+    end
 end
 
-% Close figure
-close(XsFigure.FigureH);
+%% Return final bed level to allow fit analysis
+FinalXS = [Cell.N,Cell.Z];
+
+end
 
