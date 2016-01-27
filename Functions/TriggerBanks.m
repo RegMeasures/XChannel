@@ -15,5 +15,10 @@ switch Options.BTrigger
         % Banks active if bank toe is degrading due to slope and flow
         % (without effect of bank erosion)
         Active = (Cell.Delta_flow(Bank.Bottom) + Cell.Delta_slope(Bank.Bottom)) < 0;
+    case 3
+        % Banks active if bank slope exceeds threshold
+        BankSlope = (Cell.Z(Bank.Top) - Cell.Z(Bank.Bottom)) / ...
+                    abs(Cell.N(Bank.Top) - Cell.N(Bank.Bottom));
+        Active = BankSlope > Options.BTSlope;
 end
 end

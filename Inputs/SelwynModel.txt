@@ -77,17 +77,20 @@ BankTop   = 0                % Stencil for locating bank top cell (default = 0)
 BankBot   = 0                % Stencil for locating bank bottom cell (default = 0)
                              %   0 = Adjacent cell (no stencil)
                              %   1 = Maximum slope curvature within distance and cell limits (needs: BotCellLim, BotCellDist)
+                             %   2 = Lowest cell within distance and cell limits (needs: BotCellLim, BotCellDist)
 TopCellLim = 3               % Search limit for bank top specified in no of cells (default = 1, i.e. adjacent only)             
 BotCellLim = 3               % Search limit for bank bottom specified in no of cells (default = 1, i.e. adjacent only)    
-TopDistLim = 0.1             % Search limit for bank top specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
-BotDistLim = 0.1             % Search limit for bank bottom specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
+TopDistLim = 3               % Search limit for bank top specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
+BotDistLim = 3               % Search limit for bank bottom specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
 
 % Active bank trigger
 BTrigger  = 0                % Active bank trigger (default = 0)
                              %   0 = No trigger (all banks are active)
                              %   1 = Threshold height trigger (needs: BTHeight)
                              %   2 = Degrading toe trigger (i.e. active if toe is degrading due to slope & flow effect)
+                             %   3 = Threshold slope trigger (needs: BTSlope)
 BTHeight  = 1                % Bank height threshold (for BTrigger 1)
+BTSlope   = 1                % Bank height threshold (for BTrigger 3)
 
 % Bank erosion flux calculation
 BankFlux  = 3                % Bank erosion flux calculation approach (default = 0)
