@@ -72,7 +72,7 @@ for ScenNo = 1:size(Scenarios,1)
         ub = Scenarios.ub(ScenNo);
         
         % do the optimisation
-        [Scenarios.BankCoef(ScenNo), Scenarios.FinalRMSE] = AutoFit(Inputs, OptVar, x0, lb, ub);
+        [Scenarios.BankCoef(ScenNo), Scenarios.FinalRMSE(ScenNo)] = AutoFit(Inputs, OptVar, x0, lb, ub);
         
     end
 end
