@@ -166,7 +166,7 @@ while T < Inputs.Time.EndTime
     
     %% Calculate total erosion/deposition
     Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope + Cell.Delta_i_bank;
-    if Inputs.Opt.Bank.Flux.StoredBE
+    if Inputs.Opt.Bank.Update.StoredBE
         % Store bank erosion if intermittent update option selected
         Cell.Delta_store = StoreErosion(Inputs, Cell, Bank);
         Cell.EroStore = Cell.EroStore - Cell.Delta_store * Inputs.Time.dT;
@@ -198,8 +198,9 @@ end
 %% Final tidying up
 % UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
 
-% Close figure
+% Save and close figure
 if Inputs.Outputs.PlotInt > 0
+    saveas(XsFigure.FigureH,Inputs.FileName(1:end-4),'png')
     close(XsFigure.FigureH);
     % Close video file
     if Inputs.Outputs.VideoOut == 1

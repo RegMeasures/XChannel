@@ -21,8 +21,8 @@ for BankNo = 1:Bank.NBanks
             case 1
                 % Excess slope bank erosion flux
                 CellSeperation = abs(Cell.N(Top) - Cell.N(Bottom));
-                ExcessHeight = (Cell.Z(Top) - Cell.Z(Bottom)) - ...
-                               Options.Repose * CellSeperation;
+                ExcessHeight = max((Cell.Z(Top) - Cell.Z(Bottom)) - ...
+                                   Options.Repose * CellSeperation, 0);
                 FluxRate = Options.SlipRatio * ExcessHeight/2 * ...
                            sum(Cell.Width([Top,Bottom]))/2 / dT; % Total volumetric sed flux as a result of individual bank eroding [m3/m/dT]
             case 2
@@ -38,7 +38,7 @@ for BankNo = 1:Bank.NBanks
                 % Flux based on toe transport rate * slope
                 Slope = (Cell.Z(Top) - Cell.Z(Bottom)) / ...
                         abs(Cell.N(Top) - Cell.N(Bottom));
-                ToeTransportRate = Cell.qsS_flow_kg(Bottom);
+                ToeTransportRate = Cell.qsTot_flow(Bottom);
                 FluxRate = Options.BErodibility * ToeTransportRate * Slope;
         end
 

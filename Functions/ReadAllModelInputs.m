@@ -120,84 +120,36 @@ end
 
 % Bank identification
 Inputs.Opt.Bank.ID.Approach = GetInputParameter(C,'BankID',0);
-switch Inputs.Opt.Bank.ID.Approach
-    case 0 % no additional inputs required
-        fprintf('No bank ID approach being used (i.e. everywhere is a bank)\n')
-    case 1
-        fprintf('Wet/dry bank identification selected\n')
-    case 2
-        fprintf('Transporting/non-transporting bank identification selected\n')
-    case 3
-        fprintf('Bank height bank identification approach selected\n')
-        Inputs.Opt.Bank.ID.BHeight = GetInputParameter(C,'BHeight');
-    case 4
-        fprintf('Bank slope bank identification approach selected\n')
-        Inputs.Opt.Bank.ID.BSlope = GetInputParameter(C,'BSlope');
-end
+Inputs.Opt.Bank.ID.BHeight = GetInputParameter(C,'BHeight');
+Inputs.Opt.Bank.ID.BSlope = GetInputParameter(C,'BSlope');
 
 % Bank stencil
 Inputs.Opt.Bank.Stencil.Top = GetInputParameter(C,'BankTop',0);
-switch Inputs.Opt.Bank.Stencil.Top
-    case 0
-        fprintf('No bank top stencil being used - adjacent cells\n')
-end
-if Inputs.Opt.Bank.Stencil.Top ~=0
-    Inputs.Opt.Bank.Stencil.TopCellLim = GetInputParameter(C,'TopCellLim',1);
-    Inputs.Opt.Bank.Stencil.TopDistLim = GetInputParameter(C,'TopDistLim',9999);
-end
+Inputs.Opt.Bank.Stencil.TopCellLim = GetInputParameter(C,'TopCellLim',1);
+Inputs.Opt.Bank.Stencil.TopDistLim = GetInputParameter(C,'TopDistLim',9999);
 
 Inputs.Opt.Bank.Stencil.Bottom = GetInputParameter(C,'BankBot',0);
-switch Inputs.Opt.Bank.Stencil.Bottom
-    case 0
-        fprintf('No bank bottom stencil being used - adjacent cells\n')
-    case 1
-        fprintf('Maximum slope curvature bottom stencil being used - adjacent cells\n')
-end
-if Inputs.Opt.Bank.Stencil.Bottom ~=0
-    Inputs.Opt.Bank.Stencil.BotCellLim = GetInputParameter(C,'BotCellLim',1);
-    Inputs.Opt.Bank.Stencil.BotDistLim = GetInputParameter(C,'BotDistLim',9999);
-end
+Inputs.Opt.Bank.Stencil.BotCellLim = GetInputParameter(C,'BotCellLim',1);
+Inputs.Opt.Bank.Stencil.BotDistLim = GetInputParameter(C,'BotDistLim',9999);
 
 % Bank trigger
 Inputs.Opt.Bank.Trigger.BTrigger = GetInputParameter(C,'BTrigger',0);
-switch Inputs.Opt.Bank.Trigger.BTrigger
-    case 0
-        fprintf('No bank trigger approach (i.e. every bank is active)\n')
-    case 1
-        fprintf('Threshold height bank trigger selected\n')
-        Inputs.Opt.Bank.Trigger.BTHeight = GetInputParameter(C,'BTHeight');
-    case 2
-        fprintf('Degrading toe bank trigger selected\n')
-    case 3
-        fprintf('Threshold slope bank trigger selected\n')
-        Inputs.Opt.Bank.Trigger.BTSlope = GetInputParameter(C,'BTSlope');
-end
+Inputs.Opt.Bank.Trigger.BTHeight = GetInputParameter(C,'BTHeight');
+Inputs.Opt.Bank.Trigger.BTSlope = GetInputParameter(C,'BTSlope');
 
 % Bank flux calculation
 Inputs.Opt.Bank.Flux.Approach = GetInputParameter(C,'BankFlux',0);
-switch Inputs.Opt.Bank.Flux.Approach
-    case 0 % no additional inputs required
-        fprintf('No bank erosion flux\n')
-    case 1
-        fprintf('Excess slope bank erosion flux\n')
-        Inputs.Opt.Bank.Flux.Repose = GetInputParameter(C,'Repose');
-        Inputs.Opt.Bank.Flux.SlipRatio = GetInputParameter(C,'SlipRatio',1);
-    case 2
-        fprintf('Bank erosion flux proportional to bank toe erosion\n')
-        Inputs.Opt.Bank.Flux.ThetSD = GetInputParameter(C,'ThetSD',0.5);
-    case 3
-        fprintf('Bank erosion flux proportional to bank toe transport rate\n')
-        Inputs.Opt.Bank.Flux.QsBeRatio = GetInputParameter(C,'QsBeRatio');
-    case 4
-        fprintf('Bank erosion flux proportional to (bank toe transport rate * slope)\n')
-        Inputs.Opt.Bank.Flux.BErodibility = GetInputParameter(C,'BErodibility');
-end
+Inputs.Opt.Bank.Flux.Repose = GetInputParameter(C,'Repose');
+Inputs.Opt.Bank.Flux.SlipRatio = GetInputParameter(C,'SlipRatio',1);
+Inputs.Opt.Bank.Flux.ThetSD = GetInputParameter(C,'ThetSD',0.5);
+Inputs.Opt.Bank.Flux.QsBeRatio = GetInputParameter(C,'QsBeRatio');
+Inputs.Opt.Bank.Flux.BErodibility = GetInputParameter(C,'BErodibility');
 Inputs.Opt.Bank.Flux.StencilMix = GetInputParameter(C,'StencilMix',0);
 
 % Bank updating
 Inputs.Opt.Bank.Update.StoredBE = GetInputParameter(C,'StoredBE',0);
 
-% Times
+%% Times
 Inputs.Time.dT = GetInputParameter(C,'dT');
 Inputs.Time.StartTime = GetInputParameter(C,'StartTime',0);
 Inputs.Time.EndTime = GetInputParameter(C,'EndTime');

@@ -16,10 +16,10 @@ EdgeNos = 1:Edge.NEdges;
 for ii = EdgeNos(Edge.IsBank~=0) 
     BankNo = BankNo + 1;
     
-    DistToBank = Cell.N-Edge.N(ii);
+    DistToBank = abs(Cell.N-Edge.N(ii));
     CellsToBank = [-ii+1:-1,1:(Cell.NCells+1-ii)]';
     
-    %% Locate bank top
+    %% Locate bank topc
     if Options.Top == 0
         % Bank top in cell adjacent to IDed bank edge
         Bank.Top(BankNo) = ii - 0.5 - Edge.IsBank(ii)/2;
@@ -55,11 +55,11 @@ for ii = EdgeNos(Edge.IsBank~=0)
                             (Edge.N(2:end)-Edge.N(1:end-1));
                 Curvature(~PossibleBottom) = -999;
 
-                Bank.Bottom(BankNo) = find(Curvature == max(Curvature));
+                Bank.Bottom(BankNo) = find(Curvature == max(Curvature), 1);
             case 2 % Lowest cell
                 Elevation = 9999 * ones(Cell.NCells,1);
                 Elevation(PossibleBottom) = Cell.Z(PossibleBottom);
-                Bank.Bottom(BankNo) = find(Elevation == min(Elevation));
+                Bank.Bottom(BankNo) = find(Elevation == min(Elevation), 1);
         end
     end
 end

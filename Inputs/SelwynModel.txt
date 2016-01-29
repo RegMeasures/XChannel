@@ -62,7 +62,7 @@ Csh       = 0.3              % Parameter for Talmon et al bed slope formulation 
 Dsh       = 0.0              % Parameter for Talmon et al bed slope formulation (default = 0.7, for BedSlope = 2)
 
 % Bank identification
-BankID    = 3                % Bank identification approach (default = 0)
+BankID    = 2                % Bank identification approach (default = 0)
                              %   0 = No bank ID (i.e. everywhere is a bank)
                              %   1 = Wet/dry interface
                              %   2 = Transporting/non-transporting
@@ -74,7 +74,7 @@ BSlope    = 1                % Bank slope threshold [m/m] (for BankId 4)
 % Bank erosion stencil
 BankTop   = 0                % Stencil for locating bank top cell (default = 0)
                              %   0 = Adjacent cell (no stencil)
-BankBot   = 0                % Stencil for locating bank bottom cell (default = 0)
+BankBot   = 2                % Stencil for locating bank bottom cell (default = 0)
                              %   0 = Adjacent cell (no stencil)
                              %   1 = Maximum slope curvature within distance and cell limits (needs: BotCellLim, BotCellDist)
                              %   2 = Lowest cell within distance and cell limits (needs: BotCellLim, BotCellDist)
@@ -98,17 +98,18 @@ BankFlux  = 3                % Bank erosion flux calculation approach (default =
                              %   1 = Flux/dT is proportional to excess slope (needs: Repose, SlipRatio)
                              %   2 = Flux rate is proportional to bank toe erosion rate (needs: ThetSD)
                              %   3 = Flux rate is proportional to bank toe transport rate (needs: QsBeRatio)
-                             %   4 = Flux rate is proportional to (bank toe transport rate * slope)
-Repose    = 1                % Limiting slope [m/m] (for BankFlux 1)
+                             %   4 = Flux rate is proportional to bank toe transport rate * slope (needs: BErodibility)
+Repose    = 0.5              % Limiting slope [m/m] (for BankFlux 1)
 SlipRatio = 1                % Proportion of excess material slipped per timestep [0-1] (default = 1, for BankFlux 1)
 ThetSD    = 0.2              % Bank erosion flux as a proportion of bank toe erosion rate (default = 0.5, for BankFlux 2)
 QsBeRatio = 0.05             % Bank erosion flux as a proportion of bank toe transport rate (for BankFlux 3)
-BErodibility = 0.005         % Bank erosion flux as a proportion of bank toe transport rate * slope (for BankFlux 4)
-StencilMix = 0               % Mix sediment through active layer when transporting across stencil
+BErodibility = 0.001         % Bank erosion flux as a proportion of bank toe transport rate * slope (for BankFlux 4)
+StencilMix = 0               % Mix sediment through active layer when transporting across stencil (default = 0)
                              %   0 = No mixing: i.e. material is transported from bank top directly to bank toe.
                              %   1 = Mix: i.e. material is mixed through the active layer of each cell between top and toe.
 
-StoredBE = 0                 % Store bank erosion until top can be lowered to level of toe (see Nicholas 2013)
+% Bank updating
+StoredBE = 0                 % Store bank erosion until top can be lowered to level of toe, see Nicholas 2013 (default = 0)
                              %   0 = Bank erosion flux applied immediately (default)
                              %   1 = Erosion part of bank erosion flux stored temporarily until it can be lowered to channel bed 
                              %       (note deposition is applied immediately creating temporary mass balance error)
@@ -119,6 +120,6 @@ StartTime = 60000  %0        % [s] (default = 0)
 EndTime   = 200000 %340000   % [s]
 
 %% ============================== Outputs =================================
-DiagInt   = 720              % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
+DiagInt   = 0                % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
 PlotInt   = 720              % Plot update interval [s] (default = DT, 0 = no diagnostics output)
 VideoOut  = 1                % Output cross-section video. Note: PlotInt must be > 0 for video output.(default = 0 i.e. no video) 

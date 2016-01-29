@@ -21,7 +21,7 @@ if size(Inputs.Hyd.InitialGeometry,2) >= 3
 else
     Cell.Zfinal = NaN(Cells.NCells,1);
 end
-if Inputs.Opt.Bank.Flux.StoredBE % If storing bank erosion (Nicholas 2013 approach)
+if Inputs.Opt.Bank.Update.StoredBE % If storing bank erosion (Nicholas 2013 approach)
     Cell.EroStore = zeros(Cell.NCells,1);
 end
 
