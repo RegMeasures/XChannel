@@ -10,13 +10,14 @@ FileName = 'Inputs\SelwynModel.txt';
 
 %% Load sensitivity scenarios table
 % Read excel file
-[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:N58');
+[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:N62');
 % Allocate imported array to column variable names
 clear Scenarios
-Scenarios.Run = cell2mat(raw(:,2));
-Scenarios.BankID = cell2mat(raw(:,3));
-Scenarios.BankTop = cell2mat(raw(:,4));
-Scenarios.BankBot = cell2mat(raw(:,5));
+Scenarios.ID       = (1:size(raw,1))';
+Scenarios.Run      = cell2mat(raw(:,2));
+Scenarios.BankID   = cell2mat(raw(:,3));
+Scenarios.BankTop  = cell2mat(raw(:,4));
+Scenarios.BankBot  = cell2mat(raw(:,5));
 Scenarios.BTrigger = cell2mat(raw(:,6));
 Scenarios.BankFlux = cell2mat(raw(:,7));
 Scenarios.StoredBE = cell2mat(raw(:,8));
@@ -33,7 +34,7 @@ clear raw
 %% Run each selected scenario to optimise bank erosion coefficient
 
 Scenarios.BankCoef = nan(size(Scenarios,1),1);
-Scenarios.BankCoef = nan(size(Scenarios,1),1);
+Scenarios.FinalRMSE = nan(size(Scenarios,1),1);
 for ScenNo = 1:size(Scenarios,1)
     if Scenarios.Run(ScenNo)
         % Set FileName for output

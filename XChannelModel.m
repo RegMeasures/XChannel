@@ -1,4 +1,4 @@
-function [FinalXS] = XChannelModel(Inputs)
+function [FinalXS, WL] = XChannelModel(Inputs)
 % Single cross-section 1D (cross-channel) morphological model
 %
 % [FinalXS] = XChannelModel

@@ -1,4 +1,4 @@
-function RMSE = GetModelError(OptIn,OptVar,Inputs,Quiet)
+function Error = GetModelError(OptIn,OptVar,Inputs,Quiet)
 % Wrapper to run XChannelModel in optimisation routine and return error
 %
 % RMSE = GetModelError(OptIn,OptVar,Inputs,Quiet)
@@ -38,17 +38,36 @@ for ii = 1:length(OptVar)
 end
 
 %% Run the model and calculate the error
-[FinalXS] = XChannelModel(Inputs);
-RMSE = rmse(Inputs.Hyd.InitialGeometry(:,3), FinalXS(:,2));
+[FinalXS, WL] = XChannelModel(Inputs);
+%Error = rmse(Inputs.Hyd.InitialGeometry(:,3), FinalXS(:,2));
+Error = RightBankError(FinalXS(:,1), Inputs.Hyd.InitialGeometry(:,3), FinalXS(:,2), WL);
+
 end
 
 function RMSE = rmse(Observation, Model)
 % Computed RMSE from comparison of observed and modelled data
 
-Error = Model - Observation;
-RMSE = sqrt(mean(Error.^2));
+BedError = Model - Observation;
+RMSE = sqrt(mean(BedError.^2));
 
 end
 
-function RBE = RightBankError(Observation, Model)
+function RBE = RightBankError(Dist, ObsBed, ModelBed, WL)
+% Compute error in right bank waters edge position
+ModelBank = RightBankPos(Dist, ModelBed, WL);
+ObsBank = RightBankPos(Dist, ObsBed, WL);
+RBE = abs(ModelBank - ObsBank);
+end
+
+function BankPos = RightBankPos(Dist, Bed,WL)
+% Compute right bank waters edge position
+BankCell = find(Bed<WL, 1, 'last');
+if BankCell < length(Dist)
+    BankPos = Dist(BankCell) + ...
+                  (WL - Bed(BankCell)) * ...
+                  (Dist(BankCell+1) - Dist(BankCell)) / ...
+                  (Bed(BankCell+1) - Bed(BankCell));
+else
+    BankPos = Dist(end);
+end
 end
