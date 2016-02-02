@@ -1,6 +1,9 @@
 %% Sensitivity analysis of bank erosion routines
-%
-%
+% Loop through each scenario
+% Automatically calibrate bank erosion coefficient
+% Output table of calibrated coefficients and final fit, animation, still 
+% plot of final calibration, and optimisation convergence plot.
+% Optimisation based on right bank waters edge position.
 
 addpath('Functions')
 
@@ -10,7 +13,7 @@ FileName = 'Inputs\SelwynModel.txt';
 
 %% Load sensitivity scenarios table
 % Read excel file
-[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:N62');
+[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:N66');
 % Allocate imported array to column variable names
 clear Scenarios
 Scenarios.ID       = (1:size(raw,1))';
@@ -75,8 +78,10 @@ for ScenNo = 1:size(Scenarios,1)
         % do the optimisation
         [Scenarios.BankCoef(ScenNo), Scenarios.FinalRMSE(ScenNo)] = AutoFit(Inputs, OptVar, x0, lb, ub);
         
+        % Output optimised scenarios to file
+        writetable(Scenarios(Scenarios.Run,:), 'Outputs\OptimisationResults.csv')
+        
     end
 end
 
-%% Output optimised scenarios to file
-writetable(Scenarios(Scenarios.Run,:), 'Outputs\OptimisationResults.csv')
+

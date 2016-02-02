@@ -69,7 +69,7 @@ BankID    = 2                % Bank identification approach (default = 0)
                              %   3 = Bank height (needs: BHeight)
                              %   4 = Bank slope (needs: BSlope)
 BHeight   = 1                % Bank height threshold [m] (for BankId 3)
-BSlope    = 1                % Bank slope threshold [m/m] (for BankId 4)
+BSlope    = 0.5              % Bank slope threshold [m/m] (for BankId 4)
 
 % Bank erosion stencil
 BankTop   = 0                % Stencil for locating bank top cell (default = 0)
@@ -80,8 +80,8 @@ BankBot   = 2                % Stencil for locating bank bottom cell (default = 
                              %   2 = Lowest cell within distance and cell limits (needs: BotCellLim, BotCellDist)
 TopCellLim = 3               % Search limit for bank top specified in no of cells (default = 1, i.e. adjacent only)             
 BotCellLim = 3               % Search limit for bank bottom specified in no of cells (default = 1, i.e. adjacent only)    
-TopDistLim = 3               % Search limit for bank top specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
-BotDistLim = 3               % Search limit for bank bottom specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
+TopDistLim = 5               % Search limit for bank top specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
+BotDistLim = 5               % Search limit for bank bottom specified in distance [m] (IDed bank edge to cell centre, default = 9999, i.e. no distance limit)
 
 % Active bank trigger
 BTrigger  = 0                % Active bank trigger (default = 0)

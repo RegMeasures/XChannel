@@ -38,16 +38,16 @@ fun = @(x)GetModelError(x,OptVar,Inputs,true);
 %options = optimoptions(options,'TolX', 0.0001);   % parameter tolerance
 
 options = optimset('fminbnd');  
-options = optimset(options,'Display', 'iter');% diagnostic options
-options = optimset(options,'MaxIter', 20);    % max number of iterations
-options = optimset(options,'TolX', 0.0001);   % parameter tolerance
-options = optimset(options,'PlotFcns',@PlotFit);
+options = optimset(options,'Display', 'iter');    % diagnostic options
+options = optimset(options,'MaxIter', 20);        % max number of iterations
+options = optimset(options,'TolX', (ub-lb)/1000); % parameter tolerance
+options = optimset(options,'PlotFcns',@PlotFit);  % plotting
 
 % run the optimisation
 %[x,fval] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 [x,fval] = fminbnd(fun,lb,ub,options);
 
-%% Plot the final fit
+%% Plot the final fit (and save plot + animation)
 GetModelError(x,OptVar,Inputs,false);
 
 %% Nested function for plotting optimisation progress
@@ -57,12 +57,13 @@ GetModelError(x,OptVar,Inputs,false);
         hold on;
         switch state
             case 'init'
-                ylabel('RMSE [m]')
+                %ylabel('RMSE [m]')
+                ylabel('Error in right bank position (m)')
                 xlabel(OptVar{1})
                 title(ScenarioName)
                 xlim([lb, ub])
                 ax = gca;
-                ax.YScale = 'log';
+                %ax.YScale = 'log';
             case 'iter'
                 plot(x(1),optimValues.fval,'bx');
                 drawnow
