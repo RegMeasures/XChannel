@@ -94,8 +94,8 @@ while T < Inputs.Time.EndTime
     Cell.Wet = (WL-Cell.Z >= Inputs.Hyd.DryFlc) | (Cell.WetLastTimestep & (WL-Cell.Z >= Inputs.Hyd.DryFlc / 2));
     Cell.H(Cell.Wet) = WL - Cell.Z(Cell.Wet);
     Cell.U(Cell.Wet) = Cell.H(Cell.Wet).^(2/3) * Inputs.Hyd.Slope^0.5 / Inputs.Hyd.Roughness;
-    Cell.Tau_S(Cell.Wet) = Inputs.Hyd.Rho_W * Inputs.Hyd.g * Cell.U(Cell.Wet).^2 * Inputs.Hyd.Roughness^2 ./ Cell.H(Cell.Wet).^(1/3);
-
+    Cell.Tau_S(Cell.Wet) = Inputs.Hyd.Rho_W * Inputs.Hyd.g * Cell.H(Cell.Wet) * Inputs.Hyd.Slope;
+    
     %% Calculate secondary flow
     Cell.AlphaSpiral = NaN(Cell.NCells,1);
     Cell.SpiralIntensity = zeros(Cell.NCells,1);
