@@ -1,14 +1,18 @@
-%% Test model
+%% Selwyn XChannelModel setup file
 
 %% ============================== Hydraulics ==============================
+% Basic model setup
 Geometry  = Selwyn_XS3_3m.csv % CSV file with 2 or 3 columns (no headers): 
                              %   1: Cell centre position [m]
                              %   2: Cell centre elevation [m] 
                              %   3: Final cell centre elevation [m] (optional, purely for display purposes)
-Flow      = SelwynFlow2008.csv % 0 time = 30/7/2008 % [m3/s]
+Flow      = SelwynFlow2008.csv % 0 time = 30/7/2008 % Either numeric value for constant flow [m3/s], or csv file with two columns: time [s], flow [m3/s]
 Slope     = 0.007            % overall average ~0.007 but locally may be lower? % [m/m]
-Roughness = 0.04             % [manning's n]
-Radius    = 150              % initial bank curvature ~195m, final ~95(XS4), streamline curvature likely ~100m? % radius of streamline curvature[m]
+ManningN  = 0.04             % [manning's n]
+Radius    = 150              % initial bank curvature ~195m, final ~95(XS4), streamline curvature likely ~100m?
+
+% Advanced parameters
+ESpir     = 1                % effect of spiral flow on bedload transport (default = 1) % radius of streamline curvature[m]
 DryFlc    = 0.005            % Theshold depth for wetting [m] (default = 0, drying occurs at DRYFLC/2)
 QTol      = 0.0001           % Tolerance for model flow vs desired flow when setting water level [m3/s] (default = 0.001)
 ItMax     = 50               % Maximum number of iterations for setting WL (default = 20)
@@ -23,11 +27,11 @@ Porosity  = 0.4              % Porosity of bulk bed sediment [dimensionless]
 DA        = 0.2              % Active layer thickness [m] (no effect if uniform sediment)
 SedThr    = 0.007            % Threshold depth for sediment transport [m] (default = 2*DRYFLC)
 
-%% =============================== Options ================================
-UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central
-ESpir     = 1                % effect of spiral flow on bedload transport (default = 1)
+%% ==================== Bedload transport due to flow =====================
 
-% Bedload transport
+UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central (default = 1)
+
+% Transport formula
 STFormula = 1                % Sediment transport formula:
                              %   1 = Meyer-Peter-Muller (needs: TauCrit, MPMcoef, MPMexponent)
                              %   2 = Wilcock and Crowe
@@ -42,6 +46,7 @@ MPMexponent = 1.6            % Coefficient in MPM formula possible values are:
                              %   1.5 = original MPM '48 and also Wong and Parker 2006 eq. 24
                              %   1.6 = correction suggested in Wong and Parker 2006 eq. 22 (default)
 
+% Hiding and exposure
 HidExp    = 3                % Hiding and exposure formulation
                              %   0 = No hiding or exposure correction
                              %   1 = Ashida & Michiue formulation
@@ -49,7 +54,7 @@ HidExp    = 3                % Hiding and exposure formulation
                              %   3 = Parker Klingeman and McLean (needs: Gamma)
 Gamma     = 0.8              % Gamma exponent for Parker Klingeman & McLean hiding function (for HidExp = 3)
                              
-% Transverse bed slope effects on sediment transport
+%% ========= Transverse bed slope effects on sediment transport ===========
 BedSlope  = 1                % Bed slope formulation (default = 0)
                              %   0 = No bed slope formulation
                              %   1 = General transverse bed slope formula of the form shown in Sekine & Parker 1992 (needs: BetaStar, m)
@@ -61,6 +66,7 @@ Bsh       = 0.5              % Parameter for Talmon et al bed slope formulation 
 Csh       = 0.3              % Parameter for Talmon et al bed slope formulation (default = 0.3, for BedSlope = 2)
 Dsh       = 0.0              % Parameter for Talmon et al bed slope formulation (default = 0.7, for BedSlope = 2)
 
+%% ============================== Bank Erosion ============================
 % Bank identification
 BankID    = 2                % Bank identification approach (default = 0)
                              %   0 = No bank ID (i.e. everywhere is a bank)

@@ -60,7 +60,7 @@ while T < Inputs.Time.EndTime
     Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT ./ Cell.Width / Inputs.Sed.Porosity;  
     
     %% Update bed composition
-    if Inputs.Sed.SedType == 2
+    if Inputs.Sed.SedType == 2 % if graded sediment
         % NEEDS MORE THOUGHT HERE ABOUT MIXING MODEL...
         % Fi = (Fi * DA + Delta_i_tot * DT) / DA; % Could mix new sed in before moving from active to sub-surface??? Timestep sensitive?
         Cell.SubSurfFlux_i = (max(-Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.BulkFi - ...
@@ -93,7 +93,8 @@ while T < Inputs.Time.EndTime
     WL = SetQ(Cell.Width,Cell.Z,Cell.WetLastTimestep,Inputs.Hyd);
     Cell.Wet = (WL-Cell.Z >= Inputs.Hyd.DryFlc) | (Cell.WetLastTimestep & (WL-Cell.Z >= Inputs.Hyd.DryFlc / 2));
     Cell.H(Cell.Wet) = WL - Cell.Z(Cell.Wet);
-    Cell.U(Cell.Wet) = Cell.H(Cell.Wet).^(2/3) * Inputs.Hyd.Slope^0.5 / Inputs.Hyd.Roughness;
+    Cell.Chezy = Cell.H .^ (1/6) / Inputs.Hyd.ManningN;
+    Cell.U(Cell.Wet) = Cell.H(Cell.Wet).^(2/3) * Inputs.Hyd.Slope^0.5 / Inputs.Hyd.ManningN;
     Cell.Tau_S(Cell.Wet) = Inputs.Hyd.Rho_W * Inputs.Hyd.g * Cell.H(Cell.Wet) * Inputs.Hyd.Slope;
     
     %% Calculate secondary flow
@@ -101,10 +102,10 @@ while T < Inputs.Time.EndTime
     Cell.SpiralIntensity = zeros(Cell.NCells,1);
     Cell.Tau_N = zeros(Cell.NCells,1);
     
-    Cell.AlphaSpiral(Cell.Wet) = min(sqrt(Inputs.Hyd.g) ./ (Inputs.Hyd.Kappa * (Cell.H(Cell.Wet).^(1/6) / Inputs.Hyd.Roughness)), 0.5); % Equation 9.156 in Delft3D-FLOW User Manual or Eq8 Kalkwijk & Booji 1986
+    Cell.AlphaSpiral(Cell.Wet) = min(sqrt(Inputs.Hyd.g) ./ (Inputs.Hyd.Kappa * Cell.Chezy(Cell.Wet)), 0.5); % Equation 9.156 in Delft3D-FLOW User Manual or Eq8 Kalkwijk & Booji 1986
     Cell.SpiralIntensity(Cell.Wet) = Cell.H(Cell.Wet) .* Cell.U(Cell.Wet) / Inputs.Hyd.Radius; % Eq 9.160 (I_be (intensity due to bend) only as I_ce (coriolis) is negligable)
     
-    Cell.Tau_N(Cell.Wet) = -2 * Inputs.Opt.Spiral.ESpiral * Inputs.Hyd.Rho_W * Cell.AlphaSpiral(Cell.Wet).^2 .* (1 - Cell.AlphaSpiral(Cell.Wet) / 2) .* Cell.U(Cell.Wet) .* Cell.SpiralIntensity(Cell.Wet); % Eq9.145 D3D or Eq26 Kalkwijk & Booji 1986
+    Cell.Tau_N(Cell.Wet) = -2 * Inputs.Hyd.ESpiral * Inputs.Hyd.Rho_W * Cell.AlphaSpiral(Cell.Wet).^2 .* (1 - Cell.AlphaSpiral(Cell.Wet) / 2) .* Cell.U(Cell.Wet) .* Cell.SpiralIntensity(Cell.Wet); % Eq9.145 D3D or Eq26 Kalkwijk & Booji 1986
     Cell.Tau_Tot = sqrt(Cell.Tau_S.^2 + Cell.Tau_N.^2);
     Cell.UStar = sqrt(Cell.Tau_Tot / Inputs.Hyd.Rho_W);
     
@@ -124,7 +125,7 @@ while T < Inputs.Time.EndTime
     Cell.qsiN_flow(isnan(Cell.qsiN_flow)) = 0;
 
     %% Calculate cell edge parameters
-    if Inputs.Opt.UpwindBedload % Upwind bedload
+    if Inputs.ST.UpwindBedload % Upwind bedload
         C2E_Weights = (Cell.Tau_N(1:end-1) + Cell.Tau_N(2:end)) > 0;
     else % Central
         C2E_Weights = 0.5 * ones(Cell.NCells - 1, 1);
@@ -142,7 +143,7 @@ while T < Inputs.Time.EndTime
     
     %% Calculate sediment transport due to bed slope
     Edge.Slope = [0; (Cell.Z(2:end) - Cell.Z(1:end-1)) ./ (Cell.N(2:end) - Cell.N(1:end-1)); 0];
-    Edge.qsiN_slope = BedSlope(Inputs, Edge, Frac);
+    Edge.qsiN_slope = BedSlope(Inputs.Slope, Edge, Frac);
     
     %% Fractional erosion/deposition due to flow and associated effects (i.e. everything except bank erosion)
     Cell.Delta_i_flow = Edge.qsiN_flow(1:end-1,:) - Edge.qsiN_flow(2:end,:); % Fractional volumetric flux rate into cell from neighboring cells due to flow [m3/s/m]
@@ -152,21 +153,21 @@ while T < Inputs.Time.EndTime
     
     %% Calculate sediment flux rate due to bank erosion
     % Identify banks
-    Edge.IsBank = IdentifyBanks(Inputs.Opt.Bank.ID, Cell, Edge);
+    Edge.IsBank = IdentifyBanks(Inputs.Bank.ID, Cell, Edge);
     
     % Apply bank erosion stencil
-    Bank = BankStencil(Inputs.Opt.Bank.Stencil, Cell, Edge);
+    Bank = BankStencil(Inputs.Bank.Stencil, Cell, Edge);
     
     % Apply active bank trigger
-    Bank.Active = TriggerBanks(Inputs.Opt.Bank.Trigger, Cell, Bank);
+    Bank.Active = TriggerBanks(Inputs.Bank.Trigger, Cell, Bank);
     
     % Calculate bank erosion flux
-    Cell.Delta_i_bank = BankFlux(Inputs.Opt.Bank.Flux, Cell, Edge, Frac, Inputs.Time.dT, Bank);
+    Cell.Delta_i_bank = BankFlux(Inputs.Bank.Flux, Cell, Edge, Frac, Inputs.Time.dT, Bank);
     Cell.Delta_bank = sum(Cell.Delta_i_bank, 2);
     
     %% Calculate total erosion/deposition
     Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope + Cell.Delta_i_bank;
-    if Inputs.Opt.Bank.Update.StoredBE
+    if Inputs.Bank.Update.StoredBE
         % Store bank erosion if intermittent update option selected
         Cell.Delta_store = StoreErosion(Inputs, Cell, Bank);
         Cell.EroStore = Cell.EroStore - Cell.Delta_store * Inputs.Time.dT;

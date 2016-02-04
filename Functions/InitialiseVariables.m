@@ -21,7 +21,7 @@ if size(Inputs.Hyd.InitialGeometry,2) >= 3
 else
     Cell.Zfinal = NaN(Cells.NCells,1);
 end
-if Inputs.Opt.Bank.Update.StoredBE % If storing bank erosion (Nicholas 2013 approach)
+if Inputs.Bank.Update.StoredBE % If storing bank erosion (Nicholas 2013 approach)
     Cell.EroStore = zeros(Cell.NCells,1);
 end
 
@@ -50,7 +50,7 @@ else
 end
 Frac.NFracs = size(Frac.Di_m,2);
 Frac.Di_phi = -log2(Frac.Di_m * 1000);
-if Inputs.Opt.ST.Formula == 2 % Which fractions are sand - required for Wilcock-Crowe bedload formula
+if Inputs.ST.Formula == 2 % Which fractions are sand - required for Wilcock-Crowe bedload formula
     Frac.SandFrac = Frac.Di_m <= 0.002;
 end
 Cell.SubDg_m = 2.^-sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.BulkFi, 2) ./1000;

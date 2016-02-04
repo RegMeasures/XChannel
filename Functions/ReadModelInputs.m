@@ -1,10 +1,7 @@
-function [Inputs] = ReadAllModelInputs(FileName)
+function [Inputs] = ReadModelInputs(FileName)
 % Read in XChannelModel model input file to structure array
 % [Inputs] = ReadModelInputs(FileName,PathName)
 % 
-% Same as ReadModelInputs except it reads in many optional parameters
-% irrespective of whether they are required. This is to enable changing of
-% options in SensitivityAnalysis
 
 %% Get file name and path if not specified as input
 if ~exist('FileName','var')
@@ -42,8 +39,10 @@ elseif Inputs.Hyd.FlowType == 3 % Missing file or badly formed number?
 end
 
 Inputs.Hyd.Slope = GetInputParameter(C,'Slope');
-Inputs.Hyd.Roughness = GetInputParameter(C,'Roughness');
+Inputs.Hyd.ManningN = GetInputParameter(C,'ManningN');
 Inputs.Hyd.Radius = GetInputParameter(C,'Radius');
+
+Inputs.Hyd.ESpiral = GetInputParameter(C,'ESpir',1);                       % Coefficient for effect of spiral flow on bedload transport
 Inputs.Hyd.DryFlc = GetInputParameter(C,'DryFlc',0);                       % drying and flooding threshold [m]
 Inputs.Hyd.QTol = GetInputParameter(C,'QTol',0.001);                       % flow tolerance when calculating water level [m3/s]
 Inputs.Hyd.ItMax = GetInputParameter(C,'ItMax',20);                        % maximum number of iterations for setting WL
@@ -65,31 +64,27 @@ if Inputs.Sed.SedThr<Inputs.Hyd.DryFlc
     error('SedThr must be >= DryFlc')
 end
 
-%% Read in options
-
-% Upwind bedload?
-Inputs.Opt.UpwindBedload = GetInputParameter(C,'UpwindBedload',1);
-
-% Spiral flow
-Inputs.Opt.Spiral.ESpiral = GetInputParameter(C,'ESpir',1); % Coefficient for effect of spiral flow on bedload transport
-
-% Transport formula
-Inputs.Opt.ST.Formula = GetInputParameter(C,'STFormula',1);
-switch Inputs.Opt.ST.Formula
+%% Bedload transport due to flow
+Inputs.ST.UpwindBedload = GetInputParameter(C,'UpwindBedload',1);         % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central
+Inputs.ST.Formula = GetInputParameter(C,'STFormula',1);                % Sediment transport formula
+Inputs.ST.ThetaCrit = GetInputParameter(C,'ThetaCrit',0.047);
+Inputs.ST.MPMcoef = GetInputParameter(C,'MPMcoef',4.93);
+Inputs.ST.MPMexponent = GetInputParameter(C,'MPMexponent',1.6);
+switch Inputs.ST.Formula
     case 0
-        fprintf('No bedload transport formula being used\n')
+        fprintf('No streamwise bedload transport\n')
     case 1
-        fprintf('Meyer-Peter-Muller bedload transport formula being used\n')
-        Inputs.Opt.ST.ThetaCrit = GetInputParameter(C,'ThetaCrit',0.047);
-        Inputs.Opt.ST.MPMcoef = GetInputParameter(C,'MPMcoef',4.93);
-        Inputs.Opt.ST.MPMexponent = GetInputParameter(C,'MPMexponent',1.6);
+        fprintf('Meyer-Peter-Muller bedload transport formula\n')
+        fprintf('MPM bedload formula coefficients: ThetaCrit = %g, MPMcoef = %g, MPMexponent = %g\n',...
+                Inputs.ST.ThetaCrit, Inputs.ST.MPMcoef,...
+                Inputs.ST.MPMexponent)
     case 2
-        fprintf('Wilcock-Crowe bedload transport formula being used\n')
+        fprintf('Wilcock-Crowe bedload transport formula\n')
 end
-
-% Hiding and exposure correction
-Inputs.Opt.ST.HidExp = GetInputParameter(C,'HidExp',0);
-switch Inputs.Opt.ST.HidExp
+% Hiding and exposure correction for graded sediment
+Inputs.ST.HidExp = GetInputParameter(C,'HidExp',0);
+Inputs.ST.Gamma = GetInputParameter(C,'Gamma');
+switch Inputs.ST.HidExp
     case 0
         fprintf('No hiding function being used\n')
     case 1
@@ -98,106 +93,141 @@ switch Inputs.Opt.ST.HidExp
         fprintf('Wilcock and Crowe hiding function selected\n')
     case 3
         fprintf('Parker Klingeman and McLean hiding function selected\n')
-        Inputs.Opt.ST.Gamma = GetInputParameter(C,'Gamma');
+        fprintf('Hiding function exponent (Gamma) = %g\n', Inputs.ST.Gamma)
 end
 
-% Bedslope effects
-Inputs.Opt.Slope.Formula = GetInputParameter(C,'BedSlope',0);
-switch Inputs.Opt.Slope.Formula
+%% Bedslope effects on transport
+Inputs.Slope.Formula = GetInputParameter(C,'BedSlope',0);
+Inputs.Slope.BetaStar = GetInputParameter(C,'BetaStar');
+Inputs.Slope.m = GetInputParameter(C,'m');
+Inputs.Slope.A_sh = GetInputParameter(C,'Ash',9);
+Inputs.Slope.B_sh = GetInputParameter(C,'Bsh',0.5);
+Inputs.Slope.C_sh = GetInputParameter(C,'Csh',0.3);
+Inputs.Slope.D_sh = GetInputParameter(C,'Dsh',0.7);
+switch Inputs.Slope.Formula
     case 0
         fprintf('No bed slope formulation being used\n')
     case 1
         fprintf('General bed slope formulation being used (Sekine and Parker)\n')
-        Inputs.Opt.Slope.BetaStar = GetInputParameter(C,'BetaStar');
-        Inputs.Opt.Slope.m = GetInputParameter(C,'m');
+        fprintf('Bed slope formulation coefficients: BetaStar = %g, m = %g\n',...
+                Inputs.Slope.BetaStar, Inputs.Slope.m);
     case 2
         fprintf('Talmon et al (1995) bed slope calculation\n')
-        Inputs.Opt.Slope.A_sh = GetInputParameter(C,'Ash',9);
-        Inputs.Opt.Slope.B_sh = GetInputParameter(C,'Bsh',0.5);
-        Inputs.Opt.Slope.C_sh = GetInputParameter(C,'Csh',0.3);
-        Inputs.Opt.Slope.D_sh = GetInputParameter(C,'Dsh',0.7);
+        fprintf('Talmon et al coefficients: Ash = %g, Bsh = %g, Csh = %g, Dsh = %g',...
+                Inputs.Slope.A_sh, Inputs.Slope.B_sh,...
+                Inputs.Slope.C_sh, Inputs.Slope.D_sh);
 end
 
+%% Bank erosion
 % Bank identification
-Inputs.Opt.Bank.ID.Approach = GetInputParameter(C,'BankID',0);
-switch Inputs.Opt.Bank.ID.Approach
+Inputs.Bank.ID.Approach = GetInputParameter(C,'BankID',0);
+Inputs.Bank.ID.BHeight = GetInputParameter(C,'BHeight');
+Inputs.Bank.ID.BSlope = GetInputParameter(C,'BSlope');
+switch Inputs.Bank.ID.Approach
     case 0 % no additional inputs required
         fprintf('No bank ID approach being used (i.e. everywhere is a bank)\n')
     case 1
-        fprintf('Wet/dry bank identification selected\n')
+        fprintf('Wet/dry bank identification\n')
     case 2
-        fprintf('Transporting/non-transporting bank identification selected\n')
+        fprintf('Transporting/non-transporting bank identification\n')
     case 3
-        fprintf('Bank height bank identification approach selected\n')
-        Inputs.Opt.Bank.ID.BHeight = GetInputParameter(C,'BHeight');
+        fprintf('Bank height bank identification approach\n')
+        fprintf('Threshold bank height for bank identification (BHeight) = %g\n',...
+                Inputs.Bank.ID.BHeight)
     case 4
-        fprintf('Bank slope bank identification approach selected\n')
-        Inputs.Opt.Bank.ID.BSlope = GetInputParameter(C,'BSlope');
+        fprintf('Bank slope bank identification approach\n')
+        fprintf('Threshold bank slope for bank identification (BSlope) = %g\n',...
+                Inputs.Bank.ID.BHeight)
 end
 
 % Bank stencil
-Inputs.Opt.Bank.Stencil.Top = GetInputParameter(C,'BankTop',0);
-switch Inputs.Opt.Bank.Stencil.Top
+Inputs.Bank.Stencil.Top = GetInputParameter(C,'BankTop',0);
+Inputs.Bank.Stencil.TopCellLim = GetInputParameter(C,'TopCellLim',1);
+Inputs.Bank.Stencil.TopDistLim = GetInputParameter(C,'TopDistLim',9999);
+switch Inputs.Bank.Stencil.Top
     case 0
         fprintf('No bank top stencil being used - adjacent cells\n')
 end
-if Inputs.Opt.Bank.Stencil.Top ~=0
-    Inputs.Opt.Bank.Stencil.TopCellLim = GetInputParameter(C,'TopCellLim',1);
-    Inputs.Opt.Bank.Stencil.TopDistLim = GetInputParameter(C,'TopDistLim',9999);
-end
 
-Inputs.Opt.Bank.Stencil.Bottom = GetInputParameter(C,'BankBot',0);
-switch Inputs.Opt.Bank.Stencil.Bottom
+Inputs.Bank.Stencil.Bottom = GetInputParameter(C,'BankBot',0);
+Inputs.Bank.Stencil.BotCellLim = GetInputParameter(C,'BotCellLim',1);
+Inputs.Bank.Stencil.BotDistLim = GetInputParameter(C,'BotDistLim',9999);
+switch Inputs.Bank.Stencil.Bottom
     case 0
         fprintf('No bank bottom stencil being used - adjacent cells\n')
     case 1
-        fprintf('Maximum slope curvature bottom stencil being used - adjacent cells\n')
-end
-if Inputs.Opt.Bank.Stencil.Bottom ~=0
-    Inputs.Opt.Bank.Stencil.BotCellLim = GetInputParameter(C,'BotCellLim',1);
-    Inputs.Opt.Bank.Stencil.BotDistLim = GetInputParameter(C,'BotDistLim',9999);
+        fprintf('Maximum slope curvature bottom stencil being used\n')
+    case 2
+        fprintf('Lowest elevation cell bottom stencil being used\n')
 end
 
 % Bank trigger
-Inputs.Opt.Bank.Trigger.BTrigger = GetInputParameter(C,'BTrigger',0);
-switch Inputs.Opt.Bank.Trigger.BTrigger
+Inputs.Bank.Trigger.BTrigger = GetInputParameter(C,'BTrigger',0);
+Inputs.Bank.Trigger.BTHeight = GetInputParameter(C,'BTHeight');
+Inputs.Bank.Trigger.BTSlope = GetInputParameter(C,'BTSlope');
+switch Inputs.Bank.Trigger.BTrigger
     case 0
         fprintf('No bank trigger approach (i.e. every bank is active)\n')
     case 1
         fprintf('Threshold height bank trigger selected\n')
-        Inputs.Opt.Bank.Trigger.BTHeight = GetInputParameter(C,'BTHeight');
+        fprintf('Threshold height for bank trigger (BTHeight) = %g\n',...
+                Inputs.Bank.Trigger.BTHeight)
     case 2
         fprintf('Degrading toe bank trigger selected\n')
     case 3
         fprintf('Threshold slope bank trigger selected\n')
-        Inputs.Opt.Bank.Trigger.BTSlope = GetInputParameter(C,'BTSlope');
+        fprintf('Threshold slope for bank trigger (BTSlope) = %g\n',...
+                Inputs.Bank.Trigger.BTSlope)
 end
 
 % Bank flux calculation
-Inputs.Opt.Bank.Flux.Approach = GetInputParameter(C,'BankFlux',0);
-switch Inputs.Opt.Bank.Flux.Approach
+Inputs.Bank.Flux.Approach = GetInputParameter(C,'BankFlux',0);
+Inputs.Bank.Flux.Repose = GetInputParameter(C,'Repose');
+Inputs.Bank.Flux.SlipRatio = GetInputParameter(C,'SlipRatio',1);
+Inputs.Bank.Flux.ThetSD = GetInputParameter(C,'ThetSD',0.5);
+Inputs.Bank.Flux.QsBeRatio = GetInputParameter(C,'QsBeRatio');
+Inputs.Bank.Flux.BErodibility = GetInputParameter(C,'BErodibility');
+switch Inputs.Bank.Flux.Approach
     case 0 % no additional inputs required
         fprintf('No bank erosion flux\n')
     case 1
         fprintf('Excess slope bank erosion flux\n')
-        Inputs.Opt.Bank.Flux.Repose = GetInputParameter(C,'Repose');
-        Inputs.Opt.Bank.Flux.SlipRatio = GetInputParameter(C,'SlipRatio',1);
+        fprintf('Limiting slope (Repose) = %g, Excess slipped per timestep (SlipRatio) = %g\n',...
+                Inputs.Bank.Flux.Repose, Inputs.Bank.Flux.SlipRatio)
     case 2
         fprintf('Bank erosion flux proportional to bank toe erosion\n')
-        Inputs.Opt.Bank.Flux.ThetSD = GetInputParameter(C,'ThetSD',0.5);
+        fprintf('Proportion of toe erosion redistributed to bank top (ThetSD) = %g\n',...
+                Inputs.Bank.Flux.ThetSD)
     case 3
         fprintf('Bank erosion flux proportional to bank toe transport rate\n')
-        Inputs.Opt.Bank.Flux.QsBeRatio = GetInputParameter(C,'QsBeRatio');
+        fprintf('Ratio of bank erosion flux to bank toe transport rate (QsBeRatio) = %g\n',...
+                Inputs.Bank.Flux.QsBeRatio)
     case 4
         fprintf('Bank erosion flux proportional to (bank toe transport rate * slope)\n')
-        Inputs.Opt.Bank.Flux.BErodibility = GetInputParameter(C,'BErodibility');
+        fprintf('Ratio of bank erosion flux to bank toe transport rate * slope (BErodibility) = %g\n',...
+                Inputs.Bank.Flux.BErodibility)
 end
-Inputs.Opt.Bank.Flux.StencilMix = GetInputParameter(C,'StencilMix',0);
+
+Inputs.Bank.Flux.StencilMix = GetInputParameter(C,'StencilMix',0);
+if (Inputs.Bank.Stencil.Top > 0 || Inputs.Bank.Stencil.Bottom > 0) && Inputs.Sed.SedType == 2
+    switch Inputs.Bank.Flux.StencilMix
+        case 0
+            fprintf('No mixing across stencil (i.e. material is transported from bank top directly to bank toe)')
+        case 1
+            fprintf('Mix sediment through active layer when transporting across stencil')
+    end
+end
 
 % Bank updating
-Inputs.Opt.Bank.Update.StoredBE = GetInputParameter(C,'StoredBE',0);
+Inputs.Bank.Update.StoredBE = GetInputParameter(C,'StoredBE',0);
+switch Inputs.Bank.Update.StoredBE
+    case 0
+        fprintf('Continuous bank erosion')
+    case 1
+        fprintf('Bank erosion stored until bank top cell can be dropped to toe elevation')
+end
 
-% Times
+%% Times
 Inputs.Time.dT = GetInputParameter(C,'dT');
 Inputs.Time.StartTime = GetInputParameter(C,'StartTime',0);
 Inputs.Time.EndTime = GetInputParameter(C,'EndTime');

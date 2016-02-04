@@ -5,7 +5,7 @@ function [WL] = SetQ(CellWidth,BedLevel,WetLastTimestep,HydInputs)
 WL = bisection(@Qerr,max(BedLevel),min(BedLevel),HydInputs.QTol,HydInputs.ItMax);
     function y = Qerr(x)
         y=CalcQ(CellWidth,BedLevel,WetLastTimestep,HydInputs.Slope,...
-            HydInputs.Roughness,HydInputs.DryFlc,x)-HydInputs.Flow;
+            HydInputs.ManningN,HydInputs.DryFlc,x)-HydInputs.Flow;
     end
 
 % Use inbuilt matlab optimisation (requires optimization toolbox)

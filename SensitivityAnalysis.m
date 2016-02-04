@@ -9,7 +9,7 @@ addpath('Functions')
 
 %% Load base model data
 FileName = 'Inputs\SelwynModel.txt';
-[Inputs] = ReadAllModelInputs(FileName);
+[Inputs] = ReadModelInputs(FileName);
 
 %% Load sensitivity scenarios table
 % Read excel file
