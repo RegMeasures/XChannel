@@ -1,15 +1,23 @@
 %% Selwyn XChannelModel setup file
 
 %% ============================== Hydraulics ==============================
-% Basic model setup
+% Geometry
 Geometry  = Selwyn_XS3_3m.csv % CSV file with 2 or 3 columns (no headers): 
                              %   1: Cell centre position [m]
                              %   2: Cell centre elevation [m] 
                              %   3: Final cell centre elevation [m] (optional, purely for display purposes)
-Flow      = SelwynFlow2008.csv % 0 time = 30/7/2008 % Either numeric value for constant flow [m3/s], or csv file with two columns: time [s], flow [m3/s]
 Slope     = 0.007            % overall average ~0.007 but locally may be lower? % [m/m]
-ManningN  = 0.04             % [manning's n]
 Radius    = 150              % initial bank curvature ~195m, final ~95(XS4), streamline curvature likely ~100m?
+
+% Flow
+Flow      = SelwynFlow2008.csv % 0 time = 30/7/2008 % Either numeric value for constant flow [m3/s], or csv file with two columns: time [s], flow [m3/s]
+
+% Roughness
+Roughness = 2                % Bed roughness formula:
+                             %   1 = Manning roughness (default, needs: ManningN)
+                             %   2 = Colebrook-White (needs: ks)
+ManningN  = 0.04             % Manning's 'n' (for Roughness = 1)
+ks        = 0.36             % Roughness height ks [m] (for Roughness = 2)
 
 % Advanced parameters
 ESpir     = 1                % effect of spiral flow on bedload transport (default = 1) % radius of streamline curvature[m]

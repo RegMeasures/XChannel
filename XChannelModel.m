@@ -93,8 +93,14 @@ while T < Inputs.Time.EndTime
     WL = SetQ(Cell.Width,Cell.Z,Cell.WetLastTimestep,Inputs.Hyd);
     Cell.Wet = (WL-Cell.Z >= Inputs.Hyd.DryFlc) | (Cell.WetLastTimestep & (WL-Cell.Z >= Inputs.Hyd.DryFlc / 2));
     Cell.H(Cell.Wet) = WL - Cell.Z(Cell.Wet);
-    Cell.Chezy = Cell.H .^ (1/6) / Inputs.Hyd.ManningN;
-    Cell.U(Cell.Wet) = Cell.H(Cell.Wet).^(2/3) * Inputs.Hyd.Slope^0.5 / Inputs.Hyd.ManningN;
+    switch Inputs.Hyd.Roughness
+        case 1 % Manning roughness
+            Cell.Chezy = (Cell.H .^ (1/6)) / Inputs.Hyd.ManningN;
+        case 2 % Colebrook-white
+            Cell.Chezy = 18 * log10(12 * Cell.H / Inputs.Hyd.ks); % eqn 2.34b sedimentation engineering or 9.56 D3D
+    end
+    Cell.Chezy = max(Cell.Chezy, 0.001);
+    Cell.U(Cell.Wet) = Cell.Chezy(Cell.Wet) .* sqrt(Cell.H(Cell.Wet) * Inputs.Hyd.Slope);
     Cell.Tau_S(Cell.Wet) = Inputs.Hyd.Rho_W * Inputs.Hyd.g * Cell.H(Cell.Wet) * Inputs.Hyd.Slope;
     
     %% Calculate secondary flow

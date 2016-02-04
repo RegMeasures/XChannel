@@ -28,6 +28,8 @@ fclose(fid);
 if Type ~= 2
     error('Geometry file %s not found',Inputs.Hyd.InitialGeometry)
 end
+Inputs.Hyd.Slope = GetInputParameter(C,'Slope');
+Inputs.Hyd.Radius = GetInputParameter(C,'Radius');
 
 % Flow
 [Inputs.Hyd.Flow, Inputs.Hyd.FlowType] = GetInputParameter(C,'Flow',[],FilePath);
@@ -38,10 +40,20 @@ elseif Inputs.Hyd.FlowType == 3 % Missing file or badly formed number?
     error('Flow file %s not found',Inputs.Hyd.Flow)
 end
 
-Inputs.Hyd.Slope = GetInputParameter(C,'Slope');
-Inputs.Hyd.ManningN = GetInputParameter(C,'ManningN');
-Inputs.Hyd.Radius = GetInputParameter(C,'Radius');
+% Roughness
+Inputs.Hyd.Roughness = GetInputParameter(C,'Roughness',1);                 % Choice of roughness formula
+Inputs.Hyd.ManningN = GetInputParameter(C,'ManningN');                     % Manning's 'n'
+Inputs.Hyd.ks = GetInputParameter(C,'ks');                                 % Roughness height ks [m]
+switch Inputs.Hyd.Roughness
+    case 1
+        fprintf('Using Manning''s equation for bed roughness and shear stress\n')
+        fprintf('Manning''s ''n'' coefficient = %g\n', Inputs.Hyd.ManningN)
+    case 2
+        fprintf('Using Colebrook-White equation for bed roughness and shear stress\n')
+        fprintf('Roughness height (ks) = %g m\n', Inputs.Hyd.ks)
+end
 
+% Advanced (optional) parameters
 Inputs.Hyd.ESpiral = GetInputParameter(C,'ESpir',1);                       % Coefficient for effect of spiral flow on bedload transport
 Inputs.Hyd.DryFlc = GetInputParameter(C,'DryFlc',0);                       % drying and flooding threshold [m]
 Inputs.Hyd.QTol = GetInputParameter(C,'QTol',0.001);                       % flow tolerance when calculating water level [m3/s]
@@ -132,7 +144,7 @@ switch Inputs.Bank.ID.Approach
         fprintf('Transporting/non-transporting bank identification\n')
     case 3
         fprintf('Bank height bank identification approach\n')
-        fprintf('Threshold bank height for bank identification (BHeight) = %g\n',...
+        fprintf('Threshold bank height for bank identification (BHeight) = %g m\n',...
                 Inputs.Bank.ID.BHeight)
     case 4
         fprintf('Bank slope bank identification approach\n')
@@ -170,7 +182,7 @@ switch Inputs.Bank.Trigger.BTrigger
         fprintf('No bank trigger approach (i.e. every bank is active)\n')
     case 1
         fprintf('Threshold height bank trigger selected\n')
-        fprintf('Threshold height for bank trigger (BTHeight) = %g\n',...
+        fprintf('Threshold height for bank trigger (BTHeight) = %g m\n',...
                 Inputs.Bank.Trigger.BTHeight)
     case 2
         fprintf('Degrading toe bank trigger selected\n')
