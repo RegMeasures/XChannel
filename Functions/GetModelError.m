@@ -27,13 +27,13 @@ end
 for ii = 1:length(OptVar)
     switch OptVar{ii}
         case 'Repose'
-            Inputs.Opt.Bank.Flux.Repose = OptIn(ii);
+            Inputs.Bank.Flux.Repose = OptIn(ii);
         case 'ThetSD'
-            Inputs.Opt.Bank.Flux.ThetSD = OptIn(ii);
+            Inputs.Bank.Flux.ThetSD = OptIn(ii);
         case 'QsBeRatio'
-            Inputs.Opt.Bank.Flux.QsBeRatio = OptIn(ii);
+            Inputs.Bank.Flux.QsBeRatio = OptIn(ii);
         case 'BErodibility'
-            Inputs.Opt.Bank.Flux.BErodibility = OptIn(ii);
+            Inputs.Bank.Flux.BErodibility = OptIn(ii);
     end
 end
 

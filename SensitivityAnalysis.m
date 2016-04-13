@@ -13,23 +13,25 @@ FileName = 'Inputs\SelwynModel.txt';
 
 %% Load sensitivity scenarios table
 % Read excel file
-[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:N66');
+[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:P66');
 % Allocate imported array to column variable names
 clear Scenarios
-Scenarios.ID       = (1:size(raw,1))';
-Scenarios.Run      = cell2mat(raw(:,2));
-Scenarios.BankID   = cell2mat(raw(:,3));
-Scenarios.BankTop  = cell2mat(raw(:,4));
-Scenarios.BankBot  = cell2mat(raw(:,5));
-Scenarios.BTrigger = cell2mat(raw(:,6));
-Scenarios.BankFlux = cell2mat(raw(:,7));
-Scenarios.StoredBE = cell2mat(raw(:,8));
-Scenarios.Geometry = raw(:,9);
-Scenarios.Flow = raw(:,10);
-Scenarios.lb = cell2mat(raw(:,11));
-Scenarios.ub = cell2mat(raw(:,12));
-Scenarios.dT = cell2mat(raw(:,13));
-Scenarios.Comments = raw(:,14);
+Scenarios.ID        = (1:size(raw,1))';
+Scenarios.Run       = cell2mat(raw(:,2));
+Scenarios.BankID    = cell2mat(raw(:,3));
+Scenarios.BankTop   = cell2mat(raw(:,4));
+Scenarios.BankBot   = cell2mat(raw(:,5));
+Scenarios.BTrigger  = cell2mat(raw(:,6));
+Scenarios.BankFlux  = cell2mat(raw(:,7));
+Scenarios.StoredBE  = cell2mat(raw(:,8));
+Scenarios.Geometry  = raw(:,9);
+Scenarios.Flow      = raw(:,10);
+Scenarios.lb        = cell2mat(raw(:,11));
+Scenarios.ub        = cell2mat(raw(:,12));
+Scenarios.dT        = cell2mat(raw(:,13));
+Scenarios.Vgeometry = raw(:,14);
+Scenarios.Vradius   = cell2mat(raw(:,15));
+Scenarios.Comments = raw(:,16);
 Scenarios = struct2table(Scenarios);
 % Clear temporary variables
 clear raw
@@ -37,7 +39,8 @@ clear raw
 %% Run each selected scenario to optimise bank erosion coefficient
 
 Scenarios.BankCoef = nan(size(Scenarios,1),1);
-Scenarios.FinalRMSE = nan(size(Scenarios,1),1);
+Scenarios.FinalError = nan(size(Scenarios,1),1);
+Scenarios.ValidationError = nan(size(Scenarios,1),1);
 for ScenNo = 1:size(Scenarios,1)
     if Scenarios.Run(ScenNo)
         % Set FileName for output
@@ -53,7 +56,7 @@ for ScenNo = 1:size(Scenarios,1)
         if exist(Scenarios.Geometry{ScenNo}, 'file')
             Inputs.Hyd.InitialGeometry   = csvread(Scenarios.Geometry{ScenNo});
         else
-            error('Geometry file %s not found',Inputs.Hyd.InitialGeometry)
+            error('Geometry file %s not found',Scenarios.Geometry{ScenNo})
         end
         Inputs.Time.dT                   = Scenarios.dT(ScenNo);
 
@@ -76,7 +79,15 @@ for ScenNo = 1:size(Scenarios,1)
         ub = Scenarios.ub(ScenNo);
         
         % do the optimisation
-        [Scenarios.BankCoef(ScenNo), Scenarios.FinalRMSE(ScenNo)] = AutoFit(Inputs, OptVar, x0, lb, ub);
+        if ~isnan(Scenarios.Vradius(ScenNo))
+            [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo), Scenarios.ValidationError(ScenNo)] = ...
+                AutoFit(Inputs, OptVar, x0, lb, ub, ...
+                        Scenarios.Vradius(ScenNo), ...
+                        Scenarios.Vgeometry{ScenNo});
+        else
+            [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo)] = ...
+                AutoFit(Inputs, OptVar, x0, lb, ub);
+        end
         
         % Output optimised scenarios to file
         writetable(Scenarios(Scenarios.Run,:), 'Outputs\OptimisationResults.csv')
