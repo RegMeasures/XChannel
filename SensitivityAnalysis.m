@@ -36,6 +36,11 @@ Scenarios = struct2table(Scenarios);
 % Clear temporary variables
 clear raw
 
+%% Check if output folder exists and if not create one
+if ~exist('Outputs','dir')
+    mkdir('Outputs')
+end
+
 %% Run each selected scenario to optimise bank erosion coefficient
 
 Scenarios.BankCoef = nan(size(Scenarios,1),1);
