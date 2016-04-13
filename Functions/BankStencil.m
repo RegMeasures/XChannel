@@ -19,7 +19,7 @@ for ii = EdgeNos(Edge.IsBank~=0)
     DistToBank = abs(Cell.N-Edge.N(ii));
     CellsToBank = [-ii+1:-1,1:(Cell.NCells+1-ii)]';
     
-    %% Locate bank topc
+    %% Locate bank top
     if Options.Top == 0
         % Bank top in cell adjacent to IDed bank edge
         Bank.Top(BankNo) = ii - 0.5 - Edge.IsBank(ii)/2;
@@ -60,6 +60,10 @@ for ii = EdgeNos(Edge.IsBank~=0)
                 Elevation = 9999 * ones(Cell.NCells,1);
                 Elevation(PossibleBottom) = Cell.Z(PossibleBottom);
                 Bank.Bottom(BankNo) = find(Elevation == min(Elevation), 1);
+            case 3 % Max transport cell
+                qsTot_flow = zeros(Cell.NCells,1);
+                qsTot_flow(PossibleBottom) = Cell.qsTot_flow(PossibleBottom);
+                Bank.Bottom(BankNo) = find(qsTot_flow == max(qsTot_flow), 1);
         end
     end
 end
