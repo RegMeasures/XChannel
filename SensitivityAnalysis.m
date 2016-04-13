@@ -44,12 +44,12 @@ for ScenNo = 1:size(Scenarios,1)
         Inputs.FileName = sprintf('Outputs\\Scenario%i.txt',ScenNo);
         
         % Set options
-        Inputs.Opt.Bank.ID.Approach      = Scenarios.BankID(ScenNo);
-        Inputs.Opt.Bank.Stencil.Top      = Scenarios.BankTop(ScenNo);
-        Inputs.Opt.Bank.Stencil.Bottom   = Scenarios.BankBot(ScenNo);
-        Inputs.Opt.Bank.Trigger.BTrigger = Scenarios.BTrigger(ScenNo);
-        Inputs.Opt.Bank.Flux.Approach    = Scenarios.BankFlux(ScenNo);
-        Inputs.Opt.Bank.Update.StoredBE  = Scenarios.StoredBE(ScenNo);
+        Inputs.Bank.ID.Approach      = Scenarios.BankID(ScenNo);
+        Inputs.Bank.Stencil.Top      = Scenarios.BankTop(ScenNo);
+        Inputs.Bank.Stencil.Bottom   = Scenarios.BankBot(ScenNo);
+        Inputs.Bank.Trigger.BTrigger = Scenarios.BTrigger(ScenNo);
+        Inputs.Bank.Flux.Approach    = Scenarios.BankFlux(ScenNo);
+        Inputs.Bank.Update.StoredBE  = Scenarios.StoredBE(ScenNo);
         if exist(Scenarios.Geometry{ScenNo}, 'file')
             Inputs.Hyd.InitialGeometry   = csvread(Scenarios.Geometry{ScenNo});
         else
@@ -58,19 +58,19 @@ for ScenNo = 1:size(Scenarios,1)
         Inputs.Time.dT                   = Scenarios.dT(ScenNo);
 
         % set parameters to optimise and appropriate range
-        switch Inputs.Opt.Bank.Flux.Approach
+        switch Inputs.Bank.Flux.Approach
             case 1
                 OptVar = {'Repose'};
-                x0 = Inputs.Opt.Bank.Flux.Repose;
+                x0 = Inputs.Bank.Flux.Repose;
             case 2
                 OptVar = {'ThetSD'};
-                x0 = Inputs.Opt.Bank.Flux.ThetSD;
+                x0 = Inputs.Bank.Flux.ThetSD;
             case 3
                 OptVar = {'QsBeRatio'};
-                x0 = Inputs.Opt.Bank.Flux.QsBeRatio;
+                x0 = Inputs.Bank.Flux.QsBeRatio;
             case 4
                 OptVar = {'BErodibility'};
-                x0 = Inputs.Opt.Bank.Flux.BErodibility;
+                x0 = Inputs.Bank.Flux.BErodibility;
         end
         lb = Scenarios.lb(ScenNo);
         ub = Scenarios.ub(ScenNo);
