@@ -13,7 +13,7 @@ FileName = 'Inputs\SelwynModel.txt';
 
 %% Load sensitivity scenarios table
 % Read excel file
-[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:P66');
+[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:P48');
 % Allocate imported array to column variable names
 clear Scenarios
 Scenarios.ID        = (1:size(raw,1))';
