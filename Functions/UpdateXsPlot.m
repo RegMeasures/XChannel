@@ -1,6 +1,11 @@
-function UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Flow)
+function UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Flow, PlotSed)
 % Update bed level and water level on cross-section plot
+% PlotSed = optional flag to plot sediment size (default = true)
 % See also PlotXS
+
+if ~exist('PlotSed','var')
+    PlotSed = true;
+end
 
 % Update bed level
 set(XsFigure.BedLineH, 'YData', [Cell.Z; Cell.Z(end)])
@@ -40,16 +45,17 @@ set(XsFigure.WlLineH, 'YData', [WlForPlot; WlForPlot(end)]);
 % Update Shear stress
 set(XsFigure.ShearLineH, 'YData', Cell.Tau_S)
 
-
 % Update Transport rate
 set(XsFigure.TransLineH, 'YData', Cell.qsS_flow_kg)
 
-% Update grain size
-set(XsFigure.DgLineH, 'YData', 1000*Cell.Dg_m)
+if PlotSed
+    % Update grain size
+    set(XsFigure.DgLineH, 'YData', 1000*Cell.Dg_m)
 
-% Update armour index
-ArmourIndex = (Cell.Dg_m)./(Cell.SubDg_m);
-set(XsFigure.ArmourLineH, 'YData', ArmourIndex)
+    % Update armour index
+    ArmourIndex = (Cell.Dg_m)./(Cell.SubDg_m);
+    set(XsFigure.ArmourLineH, 'YData', ArmourIndex)
+end
 
 % Update title
 set(XsFigure.XsPlotTitleH, 'String', sprintf('Model time = %.0f s, Flow = %.1f, WL = %.2f',T , Flow, WL))   

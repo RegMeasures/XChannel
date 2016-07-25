@@ -24,14 +24,15 @@ Scenarios.BankBot   = cell2mat(raw(:,5));
 Scenarios.BTrigger  = cell2mat(raw(:,6));
 Scenarios.BankFlux  = cell2mat(raw(:,7));
 Scenarios.StoredBE  = cell2mat(raw(:,8));
-Scenarios.Geometry  = raw(:,9);
-Scenarios.Flow      = raw(:,10);
-Scenarios.lb        = cell2mat(raw(:,11));
-Scenarios.ub        = cell2mat(raw(:,12));
-Scenarios.dT        = cell2mat(raw(:,13));
-Scenarios.Vgeometry = raw(:,14);
-Scenarios.Vradius   = cell2mat(raw(:,15));
-Scenarios.Comments = raw(:,16);
+Scenarios.UpwindBedload  = cell2mat(raw(:,9));
+Scenarios.Geometry  = raw(:,10);
+Scenarios.Flow      = raw(:,11);
+Scenarios.lb        = cell2mat(raw(:,12));
+Scenarios.ub        = cell2mat(raw(:,13));
+Scenarios.dT        = cell2mat(raw(:,14));
+Scenarios.Vgeometry = raw(:,15);
+Scenarios.Vradius   = cell2mat(raw(:,16));
+Scenarios.Comments  = raw(:,17);
 Scenarios = struct2table(Scenarios);
 % Clear temporary variables
 clear raw
@@ -58,6 +59,7 @@ for ScenNo = 1:size(Scenarios,1)
         Inputs.Bank.Trigger.BTrigger = Scenarios.BTrigger(ScenNo);
         Inputs.Bank.Flux.Approach    = Scenarios.BankFlux(ScenNo);
         Inputs.Bank.Update.StoredBE  = Scenarios.StoredBE(ScenNo);
+        Inputs.ST.UpwindBedload      = Scenarios.UpwindBedload(ScenNo);
         if exist(Scenarios.Geometry{ScenNo}, 'file')
             Inputs.Hyd.InitialGeometry   = csvread(Scenarios.Geometry{ScenNo});
         else

@@ -35,8 +35,9 @@ end
 [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs);
 
 %% Set up cross-section plot
+PlotSed = (Inputs.Sed.SedType == 2);
 if Inputs.Outputs.PlotInt > 0
-    XsFigure = PlotXS(Cell,Edge,Bank,NaN,0,Inputs.Hyd.Flow);
+    XsFigure = PlotXS(Cell,Edge,Bank,NaN,0,Inputs.Hyd.Flow,PlotSed);
 end    
 PlotT = Inputs.Time.StartTime;
 DiagT = Inputs.Time.StartTime;
@@ -187,10 +188,14 @@ while T < Inputs.Time.EndTime
     if T >= PlotT + Inputs.Outputs.PlotInt && Inputs.Outputs.PlotInt > 0
         % Update plot
         PlotT = PlotT + Inputs.Outputs.PlotInt;
-        UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow)
+        UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow, PlotSed)
         % Write video frame
         if Inputs.Outputs.VideoOut == 1
-            Frame = getframe(XsFigure.FigureH,[55, 393, 906, 382]);
+            if PlotSed
+                Frame = getframe(XsFigure.FigureH,[55, 393, 906, 382]);
+            else
+                Frame = getframe(XsFigure.FigureH,[55, 193, 906, 382]);
+            end
             writeVideo(vidObj,Frame);
         end
     end
@@ -210,13 +215,17 @@ if Inputs.Outputs.PlotInt > 0
     saveas(XsFigure.FigureH,Inputs.FileName(1:end-4),'png')
     close(XsFigure.FigureH);
     % Close video file
-    if Inputs.Outputs.VideoOut == 1
+    if Inputs.Outputs.VideoOut
         close(vidObj)
     end
 end
 
 %% Return final bed level to allow fit analysis
 FinalXS = [Cell.N,Cell.Z];
+
+if Inputs.Outputs.CsvOut
+    csvwrite([Inputs.FileName(1:end-4),'.out'],FinalXS);
+end
 
 end
 
