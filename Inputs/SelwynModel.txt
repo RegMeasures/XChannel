@@ -13,7 +13,7 @@ Radius    = 150              % initial bank curvature ~195m, final ~95(XS4), str
 Flow      = SelwynFlow2008.csv % 0 time = 30/7/2008 % Either numeric value for constant flow [m3/s], or csv file with two columns: time [s], flow [m3/s]
 
 % Roughness
-Roughness = 2                % Bed roughness formula:
+Roughness = 1                % Bed roughness formula:
                              %   1 = Manning roughness (default, needs: ManningN)
                              %   2 = Colebrook-White (needs: ks)
 ManningN  = 0.04             % Manning's 'n' (for Roughness = 1)
@@ -24,7 +24,7 @@ ESpir     = 1                % effect of spiral flow on bedload transport (defau
 DryFlc    = 0.005            % Theshold depth for wetting [m] (default = 0, drying occurs at DRYFLC/2)
 QTol      = 0.0001           % Tolerance for model flow vs desired flow when setting water level [m3/s] (default = 0.001)
 ItMax     = 50               % Maximum number of iterations for setting WL (default = 20)
-Kappa     = 0.41             % Von Karman Constant (default = 0.4)
+Kappa     = 0.4              % Von Karman Constant (default = 0.4)
 RhoW      = 1000             % Fluid density [kg/m3] (default 1000)
 Gravity   = 9.81             % Gravitational constant [m/s2] (default = 9.81)
 
@@ -37,7 +37,7 @@ SedThr    = 0.007            % Threshold depth for sediment transport [m] (defau
 
 %% ==================== Bedload transport due to flow =====================
 
-UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 1 = upwind, 2 = central (default = 1)
+UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 0<=UpwindBedload<=1, 1 = upwind, 0.5 = central (default = 1)
 
 % Transport formula
 STFormula = 1                % Sediment transport formula:

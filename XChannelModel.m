@@ -131,11 +131,11 @@ while T < Inputs.Time.EndTime
     Cell.qsiN_flow(isnan(Cell.qsiN_flow)) = 0;
 
     %% Calculate cell edge parameters
-    if Inputs.ST.UpwindBedload % Upwind bedload
-        C2E_Weights = (Cell.Tau_N(1:end-1) + Cell.Tau_N(2:end)) > 0;
-    else % Central
-        C2E_Weights = 0.5 * ones(Cell.NCells - 1, 1);
-    end
+    % Identify upwind cells
+    C2E_Weights = (Cell.Tau_N(1:end-1) + Cell.Tau_N(2:end)) > 0;
+    % Set weightings for LH cells (RH weightings = 1-C2E_Weights)
+    C2E_Weights = Inputs.ST.UpwindBedload * C2E_Weights + ...
+                  (1-Inputs.ST.UpwindBedload) * (C2E_Weights==0);
     
     Edge.H = Centre2Edge(Cell.H, C2E_Weights);
     Edge.Tau_Tot = Centre2Edge(Cell.Tau_Tot, C2E_Weights);    
