@@ -16,7 +16,7 @@ FileName = 'Inputs\SelwynModel.txt';
 [~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:Q48');
 % Allocate imported array to column variable names
 clear Scenarios
-Scenarios.ID        = (1:size(raw,1))';
+Scenarios.ID        = raw(:,1);
 Scenarios.Run       = cell2mat(raw(:,2));
 Scenarios.BankID    = cell2mat(raw(:,3));
 Scenarios.BankTop   = cell2mat(raw(:,4));
@@ -50,7 +50,7 @@ Scenarios.ValidationError = nan(size(Scenarios,1),1);
 for ScenNo = 1:size(Scenarios,1)
     if Scenarios.Run(ScenNo)
         % Set FileName for output
-        Inputs.FileName = sprintf('Outputs\\Scenario%i.txt',ScenNo);
+        Inputs.FileName = sprintf('Outputs\\Scenario%s.txt',Scenarios.ID{ScenNo});
         
         % Set options
         Inputs.Bank.ID.Approach      = Scenarios.BankID(ScenNo);
