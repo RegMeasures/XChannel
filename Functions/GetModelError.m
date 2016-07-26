@@ -21,7 +21,7 @@ if Quiet
     Inputs.Outputs.DiagInt = 0;
     Inputs.Outputs.PlotInt = 0;
     Inputs.Outputs.VideoOut = 0;
-    Inputs.Outputs.CsvOut = 0;
+    Inputs.Outputs.CsvInt = 0;
 end
 
 %% Adjust parameters being optimised

@@ -138,4 +138,4 @@ EndTime   = 200000 %340000   % [s]
 DiagInt   = 0                % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
 PlotInt   = 720              % Plot update interval [s] (default = DT, 0 = no diagnostics output)
 VideoOut  = 1                % Output cross-section video. Note: PlotInt must be > 0 for video output.(default = 0 i.e. no video)
-CsvOut    = 1                % Output final geometry as CSV file (default = 0 i.e. no CSV output)
+CsvInt    = 3600             % Output interval for CSV files, 0 = no CSV output, >EndTime = Output final geometry (default = 0)

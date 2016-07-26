@@ -38,10 +38,7 @@ end
 PlotSed = (Inputs.Sed.SedType == 2);
 if Inputs.Outputs.PlotInt > 0
     XsFigure = PlotXS(Cell,Edge,Bank,NaN,0,Inputs.Hyd.Flow,PlotSed);
-end    
-PlotT = Inputs.Time.StartTime;
-DiagT = Inputs.Time.StartTime;
-
+end
 
 %% Open file for video output
 if Inputs.Outputs.VideoOut == 1 && Inputs.Outputs.PlotInt > 0;
@@ -49,9 +46,14 @@ if Inputs.Outputs.VideoOut == 1 && Inputs.Outputs.PlotInt > 0;
     open(vidObj);
 end
 
-%% Main Loop
+%% Initialise Time
+PlotT = Inputs.Time.StartTime;
+DiagT = Inputs.Time.StartTime;
+CsvT  = Inputs.Time.StartTime;
+
 T = Inputs.Time.StartTime - Inputs.Time.dT;
 
+%% Main Loop
 while T < Inputs.Time.EndTime  
     %% Move to next timestep
     T = T + Inputs.Time.dT;
@@ -205,6 +207,12 @@ while T < Inputs.Time.EndTime
         DiagT = DiagT + Inputs.Outputs.DiagInt;
         fprintf('T=%gs, Q=%gm^3/s, q_s=%.2em3/s\n', T, Inputs.Hyd.Flow, sum(Cell.qsS_flow_kg))
     end
+    
+    % CSV output
+    if T >= CsvT + Inputs.Outputs.CsvInt && Inputs.Outputs.CsvInt > 0
+        CsvT = CsvT + Inputs.Outputs.CsvInt;
+        csvwrite(sprintf('%s_T=%i.out',Inputs.FileName(1:end-4),T),[Cell.N,Cell.Z]);
+    end
 end
 
 %% Final tidying up
@@ -223,8 +231,8 @@ end
 %% Return final bed level to allow fit analysis
 FinalXS = [Cell.N,Cell.Z];
 
-if Inputs.Outputs.CsvOut
-    csvwrite([Inputs.FileName(1:end-4),'.out'],FinalXS);
+if Inputs.Outputs.CsvInt > 0
+    csvwrite(sprintf('%s_T=%i.out',Inputs.FileName(1:end-4),T),FinalXS);
 end
 
 end

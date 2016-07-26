@@ -248,7 +248,7 @@ Inputs.Time.EndTime = GetInputParameter(C,'EndTime');
 Inputs.Outputs.DiagInt = GetInputParameter(C,'DiagInt',Inputs.Time.dT);
 Inputs.Outputs.PlotInt = GetInputParameter(C,'PlotInt',Inputs.Time.dT);
 Inputs.Outputs.VideoOut = GetInputParameter(C,'VideoOut',0);
-Inputs.Outputs.CsvOut = GetInputParameter(C,'CsvOut',0);
+Inputs.Outputs.CsvInt = GetInputParameter(C,'CsvInt',0);
 
 end
 
