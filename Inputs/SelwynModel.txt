@@ -37,7 +37,7 @@ SedThr    = 0.007            % Threshold depth for sediment transport [m] (defau
 
 %% ==================== Bedload transport due to flow =====================
 
-UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 0<=UpwindBedload<=1, 1 = upwind, 0.5 = central (default = 1)
+UpwindBedload = 0.5          % Scheme for calculating bedload at cell edges: 0<=UpwindBedload<=1, 1 = upwind, 0.5 = central (default = 1)
 
 % Transport formula
 STFormula = 1                % Sediment transport formula:
@@ -138,4 +138,4 @@ EndTime   = 200000 %340000   % [s]
 DiagInt   = 0                % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
 PlotInt   = 720              % Plot update interval [s] (default = DT, 0 = no diagnostics output)
 VideoOut  = 1                % Output cross-section video. Note: PlotInt must be > 0 for video output.(default = 0 i.e. no video)
-CsvInt    = 0 %900           % Output interval for CSV files, 0 = no CSV output, >EndTime = Output final geometry (default = 0)
+CsvInt    = 900              % Output interval for CSV files, 0 = no CSV output, >EndTime = Output final geometry (default = 0)

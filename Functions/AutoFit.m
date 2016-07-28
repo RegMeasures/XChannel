@@ -30,7 +30,7 @@ if ~isstruct(Inputs)
     [Inputs] = ReadModelInputs(Inputs);
 end
 
-%% Do the optimisation...
+%% Do the calibration
 
 % basic info
 [~, ScenarioName, ~] = fileparts(Inputs.FileName);
@@ -62,6 +62,7 @@ if ~isnan(Scenario.Vradius)
     % model setup
     ValidationInputs = Inputs;
     ValidationInputs.Hyd.Radius = Scenario.Vradius;
+    ValidationInputs.Outputs.CsvInt = 99999999; % only output final XS shape for validation run
     if ~isnan(Scenario.Vgeometry{1})
         ValidationInputs.Hyd.InitialGeometry   = csvread(Scenario.Vgeometry{1});
     else
