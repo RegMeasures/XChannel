@@ -3,6 +3,8 @@ function [Delta_i_bank] = BankFlux(Options, Cell, Edge, Frac, dT, Bank)
 % Delta_i_bank = NCells x NFracs matrix containing fractional flux rate
 % into and out of each cell due to bank erosion.
 
+% FluxRate = rate of sediment transport due to bank erosion [m3/m/s]
+
 %qsiN_Bank = zeros(Edge.NEdges,1);
 Delta_i_bank = zeros(Cell.NCells,Frac.NFracs);
 
@@ -24,7 +26,7 @@ for BankNo = 1:Bank.NBanks
                 ExcessHeight = max((Cell.Z(Top) - Cell.Z(Bottom)) - ...
                                    Options.Repose * CellSeperation, 0);
                 FluxRate = Options.SlipRatio * ExcessHeight/2 * ...
-                           sum(Cell.Width([Top,Bottom]))/2 / dT; % Total volumetric sed flux as a result of individual bank eroding [m3/m/dT]
+                           sum(Cell.Width([Top,Bottom]))/2 / dT; % Total volumetric sed flux as a result of individual bank eroding [m3/m/s]
             case 2
                 % Flux based on bank toe erosion rate (THETSD approach)
                 ToeErosionRate = -sum(Cell.Delta_i_flow(Bottom,:) + Cell.Delta_i_slope(Bottom,:), 2);

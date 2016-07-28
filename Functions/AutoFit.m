@@ -1,10 +1,10 @@
-function [x,fval,Vfval] = AutoFit(Inputs, OptVar, x0, lb, ub, Vradius, Vgeometry)
+function [x,fval,Vfval] = AutoFit(Inputs, OptVar, x0, lb, ub, Scenario)
 % Auto fit XChannelModel parameters to achieve best calibration
 %
 % [x,fval,Vfval] = AutoFit(FileName, OptVar, lb, ub)
 %
 % inputs:
-% FileName = name of model input file for XChannelModel.m
+% Inputs   = Model inputs for XChannelModel.m
 %            (a final cross-section geometry must be included to fit to)
 % OptVar   = list of parametrs to optimise (cell array of strings)
 %            (only a limited subset can be optimised: see GetModelError for
@@ -36,7 +36,7 @@ end
 [~, ScenarioName, ~] = fileparts(Inputs.FileName);
 
 % define function to optimise
-fun = @(x)GetModelError(x,OptVar,Inputs,true);
+fun = @(x)GetModelError(x,OptVar,Inputs,Scenario.BankTestWL{:},true);
 
 % set optimisation options
 %options = optimoptions('fmincon');                % default options
@@ -55,17 +55,17 @@ options = optimset(options,'PlotFcns',@PlotFit);  % plotting
 [x,fval] = fminbnd(fun,lb,ub,options);
 
 %% Plot the final fit (and save plot + animation)
-GetModelError(x,OptVar,Inputs,false);
+GetModelError(x,OptVar,Inputs,Scenario.BankTestWL{:},false);
 
 %% Validate model
 if exist('Vradius','var')
     % model setup
     ValidationInputs = Inputs;
-    ValidationInputs.Hyd.Radius = Vradius;
-    if exist(Vgeometry, 'file')
-        ValidationInputs.Hyd.InitialGeometry   = csvread(Vgeometry);
+    ValidationInputs.Hyd.Radius = Scenario.Vradius;
+    if exist(Scenario.Vgeometry, 'file')
+        ValidationInputs.Hyd.InitialGeometry   = csvread(Scenario.Vgeometry);
     else
-        error('Geometry file %s not found',Vgeometry)
+        error('Geometry file %s not found',Scenario.Vgeometry)
     end
     ValidationInputs.FileName = [Inputs.FileName(1:end-4),'_Validation.txt'];
     for ii = 1:length(OptVar)
@@ -81,7 +81,7 @@ if exist('Vradius','var')
         end
     end
     % run model
-    Vfval = GetModelError(x,OptVar,ValidationInputs,false);
+    Vfval = GetModelError(x,OptVar,ValidationInputs,Scenario.VBankTestWL{:},false);
 else
     Vfval = nan;
 end

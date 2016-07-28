@@ -13,7 +13,7 @@ FileName = 'Inputs\SelwynModel.txt';
 
 %% Load sensitivity scenarios table
 % Read excel file
-[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:Q95');
+[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:R95');
 % Allocate imported array to column variable names
 clear Scenarios
 Scenarios.ID        = raw(:,1);
@@ -26,13 +26,14 @@ Scenarios.BankFlux  = cell2mat(raw(:,7));
 Scenarios.StoredBE  = cell2mat(raw(:,8));
 Scenarios.UpwindBedload  = cell2mat(raw(:,9));
 Scenarios.Geometry  = raw(:,10);
-Scenarios.Flow      = raw(:,11);
+Scenarios.BankTestWL = raw(:,11);
 Scenarios.lb        = cell2mat(raw(:,12));
 Scenarios.ub        = cell2mat(raw(:,13));
 Scenarios.dT        = cell2mat(raw(:,14));
 Scenarios.Vgeometry = raw(:,15);
 Scenarios.Vradius   = cell2mat(raw(:,16));
-Scenarios.Comments  = raw(:,17);
+Scenarios.VBankTestWL = cell2mat(raw(:,17));
+Scenarios.Comments  = raw(:,18);
 Scenarios = struct2table(Scenarios);
 % Clear temporary variables
 clear raw
@@ -89,8 +90,7 @@ for ScenNo = 1:size(Scenarios,1)
         if ~isnan(Scenarios.Vradius(ScenNo))
             [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo), Scenarios.ValidationError(ScenNo)] = ...
                 AutoFit(Inputs, OptVar, x0, lb, ub, ...
-                        Scenarios.Vradius(ScenNo), ...
-                        Scenarios.Vgeometry{ScenNo});
+                        Scenarios(ScenNo,:));
         else
             [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo)] = ...
                 AutoFit(Inputs, OptVar, x0, lb, ub);
