@@ -26,7 +26,7 @@ Scenarios.BankFlux  = cell2mat(raw(:,7));
 Scenarios.StoredBE  = cell2mat(raw(:,8));
 Scenarios.UpwindBedload  = cell2mat(raw(:,9));
 Scenarios.Geometry  = raw(:,10);
-Scenarios.BankTestWL = raw(:,11);
+Scenarios.BankTestWL = cell2mat(raw(:,11));
 Scenarios.lb        = cell2mat(raw(:,12));
 Scenarios.ub        = cell2mat(raw(:,13));
 Scenarios.dT        = cell2mat(raw(:,14));
@@ -87,14 +87,8 @@ for ScenNo = 1:size(Scenarios,1)
         ub = Scenarios.ub(ScenNo);
         
         % do the optimisation
-        if ~isnan(Scenarios.Vradius(ScenNo))
-            [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo), Scenarios.ValidationError(ScenNo)] = ...
-                AutoFit(Inputs, OptVar, x0, lb, ub, ...
-                        Scenarios(ScenNo,:));
-        else
-            [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo)] = ...
-                AutoFit(Inputs, OptVar, x0, lb, ub);
-        end
+        [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo)] = ...
+            AutoFit(Inputs, OptVar, x0, lb, ub, Scenarios(ScenNo,:));
         
         % Output optimised scenarios to file
         writetable(Scenarios(Scenarios.Run,:), 'Outputs\OptimisationResults.csv')

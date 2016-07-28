@@ -36,7 +36,7 @@ end
 [~, ScenarioName, ~] = fileparts(Inputs.FileName);
 
 % define function to optimise
-fun = @(x)GetModelError(x,OptVar,Inputs,Scenario.BankTestWL{:},true);
+fun = @(x)GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,true);
 
 % set optimisation options
 %options = optimoptions('fmincon');                % default options
@@ -55,17 +55,17 @@ options = optimset(options,'PlotFcns',@PlotFit);  % plotting
 [x,fval] = fminbnd(fun,lb,ub,options);
 
 %% Plot the final fit (and save plot + animation)
-GetModelError(x,OptVar,Inputs,Scenario.BankTestWL{:},false);
+GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,false);
 
 %% Validate model
-if exist('Vradius','var')
+if ~isnan(Scenario.Vradius)
     % model setup
     ValidationInputs = Inputs;
     ValidationInputs.Hyd.Radius = Scenario.Vradius;
-    if exist(Scenario.Vgeometry, 'file')
-        ValidationInputs.Hyd.InitialGeometry   = csvread(Scenario.Vgeometry);
+    if ~isnan(Scenario.Vgeometry{1})
+        ValidationInputs.Hyd.InitialGeometry   = csvread(Scenario.Vgeometry{1});
     else
-        error('Geometry file %s not found',Scenario.Vgeometry)
+        error('Geometry file %s not found',Scenario.Vgeometry{1})
     end
     ValidationInputs.FileName = [Inputs.FileName(1:end-4),'_Validation.txt'];
     for ii = 1:length(OptVar)
@@ -81,7 +81,7 @@ if exist('Vradius','var')
         end
     end
     % run model
-    Vfval = GetModelError(x,OptVar,ValidationInputs,Scenario.VBankTestWL{:},false);
+    Vfval = GetModelError(x,OptVar,ValidationInputs,Scenario.VBankTestWL,false);
 else
     Vfval = nan;
 end
