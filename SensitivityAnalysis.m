@@ -92,7 +92,7 @@ for ScenNo = 1:size(Scenarios,1)
             AutoFit(Inputs, OptVar, x0, lb, ub, Scenarios(ScenNo,:));
         
         % Output optimised scenarios to file
-        Scenarios.SimulationDate(ScenNo) = datestr(now,'dd/mm/yyyy hh:mm:ss');
+        Scenarios.SimulationDate(ScenNo) = datestr(now,'dd/mm/yyyy HH:MM:SS');
         writetable(Scenarios, 'Outputs\OptimisationResults.csv')
         
     end

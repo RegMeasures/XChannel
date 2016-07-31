@@ -122,8 +122,8 @@ while T < Inputs.Time.EndTime
     Cell.ShieldsStress_i = (Cell.Tau_Tot * ones(1,Frac.NFracs)) ./ ...
                           ((Inputs.Sed.Rho_S - Inputs.Hyd.Rho_W) * Inputs.Hyd.g * (ones(Cell.NCells,1)*Frac.Di_m));
                      
-    Cell.Active = (WL - Cell.Z) >= Inputs.Sed.SedThr;
-    Edge.Active = [0; Cell.Active(1:end-1) .* Cell.Active(2:end); 0];
+    Cell.Active = (WL - Cell.Z) >= Inputs.Sed.SedThr; % Cells active for transport only if depth is greater than sed threshold
+    Edge.Active = [0; Cell.Active(1:end-1) .* Cell.Active(2:end); 0]; % Edge is active only if cells on both sides are active
     
     [Cell.qsiTot_flow,Cell.ThetaCrit_i] = BedLoad(Inputs, Cell, Frac);
     
@@ -140,15 +140,13 @@ while T < Inputs.Time.EndTime
     C2E_Weights = Inputs.ST.UpwindBedload * C2E_Weights + ...
                   (1-Inputs.ST.UpwindBedload) * (C2E_Weights==0);
     
-    Edge.H = Centre2Edge(Cell.H, C2E_Weights);
-    Edge.Tau_Tot = Centre2Edge(Cell.Tau_Tot, C2E_Weights);    
-    Edge.ShieldsStress_i = Centre2Edge(Cell.ShieldsStress_i, C2E_Weights);
-    Edge.qsiTot_flow = Centre2Edge(Cell.qsiTot_flow, C2E_Weights);
-    Edge.qsiTot_flow(~Edge.Active,:) = 0;
-    Edge.qsiN_flow = Centre2Edge(Cell.qsiN_flow, C2E_Weights);
-    Edge.qsiN_flow(~Edge.Active,:) = 0;
-    Edge.ThetaCrit_i = Centre2Edge(Cell.ThetaCrit_i, C2E_Weights);
-    Edge.Dg_m = Centre2Edge(Cell.Dg_m, C2E_Weights);
+    Edge.H = Centre2Edge(Cell.H, C2E_Weights, Edge.Active);
+    Edge.Tau_Tot = Centre2Edge(Cell.Tau_Tot, C2E_Weights, Edge.Active);    
+    Edge.ShieldsStress_i = Centre2Edge(Cell.ShieldsStress_i, C2E_Weights, Edge.Active);
+    Edge.qsiTot_flow = Centre2Edge(Cell.qsiTot_flow, C2E_Weights, Edge.Active);
+    Edge.qsiN_flow = Centre2Edge(Cell.qsiN_flow, C2E_Weights, Edge.Active);
+    Edge.ThetaCrit_i = Centre2Edge(Cell.ThetaCrit_i, C2E_Weights, Edge.Active);
+    Edge.Dg_m = Centre2Edge(Cell.Dg_m, C2E_Weights, Edge.Active);
     
     %% Calculate sediment transport due to bed slope
     Edge.Slope = [0; (Cell.Z(2:end) - Cell.Z(1:end-1)) ./ (Cell.N(2:end) - Cell.N(1:end-1)); 0];
