@@ -48,6 +48,7 @@ end
 Scenarios.BankCoef = nan(size(Scenarios,1),1);
 Scenarios.FinalError = nan(size(Scenarios,1),1);
 Scenarios.ValidationError = nan(size(Scenarios,1),1);
+Scenarios.SimulationDate = cell(size(Scenarios,1),1);
 for ScenNo = 1:size(Scenarios,1)
     if Scenarios.Run(ScenNo)
         % Set FileName for output
@@ -91,7 +92,8 @@ for ScenNo = 1:size(Scenarios,1)
             AutoFit(Inputs, OptVar, x0, lb, ub, Scenarios(ScenNo,:));
         
         % Output optimised scenarios to file
-        writetable(Scenarios(Scenarios.Run,:), 'Outputs\OptimisationResults.csv')
+        Scenarios.SimulationDate(ScenNo) = datestr(now,'dd/mm/yyyy hh:mm:ss');
+        writetable(Scenarios, 'Outputs\OptimisationResults.csv')
         
     end
 end
