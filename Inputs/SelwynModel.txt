@@ -37,7 +37,7 @@ SedThr    = 0.007            % Threshold depth for sediment transport [m] (defau
 
 %% ==================== Bedload transport due to flow =====================
 
-UpwindBedload = 0.5          % Scheme for calculating bedload at cell edges: 0<=UpwindBedload<=1, 1 = upwind, 0.5 = central (default = 1)
+UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 0<=UpwindBedload<=1, 1 = upwind, 0.5 = central (default = 1)
 
 % Transport formula
 STFormula = 1                % Sediment transport formula:
