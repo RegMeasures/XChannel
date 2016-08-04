@@ -7,7 +7,7 @@ Geometry  = Selwyn_XS3_3m.csv % CSV file with 2 or 3 columns (no headers):
                              %   2: Cell centre elevation [m] 
                              %   3: Final cell centre elevation [m] (optional, purely for display purposes)
 Slope     = 0.007            % overall average ~0.007 but locally may be lower? % [m/m]
-Radius    = 150              % initial bank curvature ~195m, final ~95(XS4), streamline curvature likely ~100m?
+Radius    = 185              % 185 = average of measured pre and post bank curvature at XS3
 
 % Flow
 Flow      = SelwynFlow2008.csv % 0 time = 30/7/2008 % Either numeric value for constant flow [m3/s], or csv file with two columns: time [s], flow [m3/s]
