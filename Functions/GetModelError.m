@@ -1,4 +1,4 @@
-function [AbsError, ErrorSign] = GetModelError(OptIn,OptVar,Inputs,BankTestWL,Quiet)
+function [AbsError, ErrorSign] = GetModelError(OptIn,OptVar,Inputs,BankTestWL,Quiet,LineH)
 % Wrapper to run XChannelModel in optimisation routine and return error
 %
 % RMSE = GetModelError(OptIn,OptVar,Inputs,Quiet)
@@ -10,8 +10,11 @@ function [AbsError, ErrorSign] = GetModelError(OptIn,OptVar,Inputs,BankTestWL,Qu
 % Inputs = XChannelModel inputs as read by ReadModelInputs
 % Quiet  = Boolean - True = no outputs, False = outputs as specified in
 %          Inputs.Outputs
+% LineH  = LineHandle for series of points to be updated with convergance
+%          (optional - if omitted no data will be plotted)
 %
 % Parameters enabled for optimisation are currently restricted to:
+%  - Repose
 %  - ThetSD
 %  - QsBeRatio
 %  - BErodibility
@@ -46,6 +49,12 @@ end
                                      FinalXS(:,2), Inputs.Hyd.Radius, ...
                                      BankTestWL);
 
+%% Update the optimisation figure (optional)
+if exist('LineH','var')
+    set(LineH,'XData',[LineH.XData, OptIn(1)],...
+              'YData',[LineH.YData, AbsError*ErrorSign])
+    drawnow
+end
 end
 
 function RMSE = rmse(Observation, Model)
