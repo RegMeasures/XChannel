@@ -1,4 +1,4 @@
-function [x,fval,Vfval] = AutoFit(Inputs, OptVar, x0, lb, ub, Scenario)
+function [x,CalibError,ValidError] = AutoFit(Inputs, OptVar, x0, lb, ub, Scenario)
 % Auto fit XChannelModel parameters to achieve best calibration
 %
 % [x,fval,Vfval] = AutoFit(FileName, OptVar, lb, ub)
@@ -51,11 +51,12 @@ options = optimset(options,'TolX', (ub-lb)/1000); % parameter tolerance
 options = optimset(options,'PlotFcns',@PlotFit);  % plotting
 
 % run the optimisation
-%[x,fval] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
-[x,fval] = fminbnd(fun,lb,ub,options);
+%[x,CalibError] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+[x,CalibError] = fminbnd(fun,lb,ub,options);
 
 %% Plot the final fit (and save plot + animation)
-GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,false);
+[CalibError,ErrorSign] = GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,false);
+CalibError = CalibError * ErrorSign;
 
 %% Validate model
 if ~isnan(Scenario.Vradius)
@@ -82,9 +83,10 @@ if ~isnan(Scenario.Vradius)
         end
     end
     % run model
-    Vfval = GetModelError(x,OptVar,ValidationInputs,Scenario.VBankTestWL,false);
+    [ValidError,ErrorSign] = GetModelError(x,OptVar,ValidationInputs,Scenario.VBankTestWL,false);
+    ValidError = ValidError * ErrorSign;
 else
-    Vfval = nan;
+    ValidError = nan;
 end
 
 
