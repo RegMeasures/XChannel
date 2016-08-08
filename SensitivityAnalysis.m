@@ -88,7 +88,8 @@ for ScenNo = 1:size(Scenarios,1)
         ub = Scenarios.ub(ScenNo);
         
         % do the optimisation
-        [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo)] = ...
+        [Scenarios.BankCoef(ScenNo), Scenarios.FinalError(ScenNo), ...
+            Scenarios.ValidationError(ScenNo)] = ...
             AutoFit(Inputs, OptVar, x0, lb, ub, Scenarios(ScenNo,:));
         
         % Output optimised scenarios to file
