@@ -46,6 +46,15 @@ if Inputs.Outputs.VideoOut == 1 && Inputs.Outputs.PlotInt > 0;
     open(vidObj);
 end
 
+%% Create folder for snapshots
+if Inputs.Outputs.CsvInt > 0;
+    [SnapshotDir,~,~] = fileparts(Inputs.FileName);
+    SnapshotDir = [SnapshotDir,'\snapshots'];
+    if ~exist(SnapshotDir,'dir')
+        mkdir(SnapshotDir)
+    end
+end
+
 %% Initialise Time
 PlotT = Inputs.Time.StartTime;
 DiagT = Inputs.Time.StartTime;
@@ -209,7 +218,7 @@ while T < Inputs.Time.EndTime
     % CSV output
     if T >= CsvT + Inputs.Outputs.CsvInt && Inputs.Outputs.CsvInt > 0
         CsvT = CsvT + Inputs.Outputs.CsvInt;
-        csvwrite(sprintf('%s_T=%i.out',Inputs.FileName(1:end-4),T),[Cell.N,Cell.Z]);
+        csvwrite(sprintf('%s\\BedSnapshot_T=%i.out',SnapshotDir,T),[Cell.N,Cell.Z]);
     end
 end
 
@@ -230,7 +239,7 @@ end
 FinalXS = [Cell.N,Cell.Z];
 
 if Inputs.Outputs.CsvInt > 0
-    csvwrite(sprintf('%s_T=%i.out',Inputs.FileName(1:end-4),T),FinalXS);
+    csvwrite(sprintf('%s\\BedSnapshot_T=%i.out',SnapshotDir,T),FinalXS);
 end
 
 end

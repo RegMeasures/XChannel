@@ -51,8 +51,14 @@ Scenarios.ValidationError = nan(size(Scenarios,1),1);
 Scenarios.SimulationDate = cell(size(Scenarios,1),1);
 for ScenNo = 1:size(Scenarios,1)
     if Scenarios.Run(ScenNo)
+        % Create folder for scenario outputs
+        if ~exist(sprintf('Outputs\\Scenario%s',Scenarios.ID{ScenNo}),'dir')
+            mkdir(sprintf('Outputs\\Scenario%s',Scenarios.ID{ScenNo}))
+        end
+
+        
         % Set FileName for output
-        Inputs.FileName = sprintf('Outputs\\Scenario%s.txt',Scenarios.ID{ScenNo});
+        Inputs.FileName = sprintf('Outputs\\Scenario%s\\Scenario%s.txt',Scenarios.ID{ScenNo},Scenarios.ID{ScenNo});
         
         % Set options
         Inputs.Bank.ID.Approach      = Scenarios.BankID(ScenNo);

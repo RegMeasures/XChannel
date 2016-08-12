@@ -29,13 +29,9 @@ addpath('Functions')
 if ~isstruct(Inputs)
     [Inputs] = ReadModelInputs(Inputs);
 end
-
-%% Do the calibration
-
-% basic info
 [~, ScenarioName, ~] = fileparts(Inputs.FileName);
 
-% create plot to show optimisation progress (including sign of error)
+%% create plot to show optimisation progress (including sign of error)
 OptPlot.FigH = figure;
 OptPlot.AxesH = axes;
 OptPlot.LineH = plot(OptPlot.AxesH,[inf],[inf],'bx:');
@@ -46,6 +42,7 @@ xlabel(OptVar{1})
 title(ScenarioName)
 xlim([lb, ub])
 
+%% Do the calibration
 % define function to optimise
 fun = @(x)GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,true,OptPlot.LineH);
 
@@ -65,18 +62,17 @@ options = optimset(options,'TolX', (ub-lb)/1000); % parameter tolerance
 %[x,CalibError] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 [x,CalibError] = fminbnd(fun,lb,ub,options);
 
-% tidy, save and close optimisation plot
+%% Plot the final fit (and save plot + animation)
+[CalibError,ErrorSign] = GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,false);
+CalibError = CalibError * ErrorSign;
+
+%% tidy, save and close optimisation plot
 [OptPlot.LineH.XData, sortIndex] = sort(OptPlot.LineH.XData);
 OptPlot.LineH.YData = OptPlot.LineH.YData(sortIndex);
 OptPlot.LineH
 plot(x(1),CalibError,'ro');
 saveas(OptPlot.FigH, [Inputs.FileName(1:end-4), '_OptimisationPlot'],'png')
 close(OptPlot.FigH)
-
-
-%% Plot the final fit (and save plot + animation)
-[CalibError,ErrorSign] = GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,false);
-CalibError = CalibError * ErrorSign;
 
 %% Validate model
 if ~isnan(Scenario.Vradius)
