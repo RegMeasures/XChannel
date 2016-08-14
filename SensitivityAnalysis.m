@@ -34,7 +34,13 @@ Scenarios.Vgeometry = raw(:,15);
 Scenarios.Vradius   = cell2mat(raw(:,16));
 Scenarios.VBankTestWL = cell2mat(raw(:,17));
 Scenarios.Comments  = raw(:,18);
+
 Scenarios = struct2table(Scenarios);
+Scenarios.ID = strtrim(Scenarios.ID);
+Scenarios.Geometry = strtrim(Scenarios.Geometry);
+Scenarios.Vgeometry(~cellfun(@(x) any(isnan(x)), Scenarios.Vgeometry)) = ...
+    strtrim(Scenarios.Vgeometry(~cellfun(@(x) any(isnan(x)), Scenarios.Vgeometry)));
+
 % Clear temporary variables
 clear raw
 
