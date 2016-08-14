@@ -9,6 +9,8 @@ function [x,CalibError,ValidError] = AutoFit(Inputs, OptVar, x0, lb, ub, Scenari
 % OptVar   = list of parametrs to optimise (cell array of strings)
 %            (only a limited subset can be optimised: see GetModelError for
 %            list of parameters for which optimisation has been enabled)
+% x0       = initial estimate of calibration parameters to start iterating
+%            from (no longer used)
 % lb       = vector of lower bounds corresponding to each named parameter
 %            in OptVar
 % ub       = vector of upper bounds corresponding to each named parameter
@@ -34,7 +36,7 @@ end
 %% create plot to show optimisation progress (including sign of error)
 OptPlot.FigH = figure;
 OptPlot.AxesH = axes;
-OptPlot.LineH = plot(OptPlot.AxesH,[inf],[inf],'bx:');
+OptPlot.LineH = plot(OptPlot.AxesH,inf,inf,'bx:');
 hold on
 plot([lb,ub],[0,0],'k-')
 ylabel('Error in right bank position (m)')
@@ -60,7 +62,7 @@ options = optimset(options,'TolX', (ub-lb)/1000); % parameter tolerance
 
 % run the optimisation
 %[x,CalibError] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
-[x,CalibError] = fminbnd(fun,lb,ub,options);
+[x,~] = fminbnd(fun,lb,ub,options);
 
 %% Plot the final fit (and save plot + animation)
 [CalibError,ErrorSign] = GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,false);
@@ -69,7 +71,6 @@ CalibError = CalibError * ErrorSign;
 %% tidy, save and close optimisation plot
 [OptPlot.LineH.XData, sortIndex] = sort(OptPlot.LineH.XData);
 OptPlot.LineH.YData = OptPlot.LineH.YData(sortIndex);
-OptPlot.LineH
 plot(x(1),CalibError,'ro');
 saveas(OptPlot.FigH, [Inputs.FileName(1:end-4), '_OptimisationPlot'],'png')
 close(OptPlot.FigH)
