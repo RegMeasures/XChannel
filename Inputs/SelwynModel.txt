@@ -83,7 +83,7 @@ BankID    = 2                % Bank identification approach (default = 0)
                              %   3 = Bank height (needs: BHeight)
                              %   4 = Bank slope (needs: BSlope)
 BHeight   = 1                % Bank height threshold [m] (for BankId 3)
-BSlope    = 0.5              % Bank slope threshold [m/m] (for BankId 4)
+BSlope    = 0.3              % Bank slope threshold [m/m] (for BankId 4)
 
 % Bank erosion stencil
 BankTop   = 0                % Stencil for locating bank top cell (default = 0)
