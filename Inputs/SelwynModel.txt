@@ -105,7 +105,7 @@ BTrigger  = 0                % Active bank trigger (default = 0)
                              %   2 = Degrading toe trigger (i.e. active if toe is degrading due to slope & flow effect)
                              %   3 = Threshold slope trigger (needs: BTSlope)
 BTHeight  = 1                % Bank height threshold (for BTrigger 1)
-BTSlope   = 1                % Bank height threshold (for BTrigger 3)
+BTSlope   = 1                % Bank slope threshold (for BTrigger 3)
 
 % Bank erosion flux calculation
 BankFlux  = 3                % Bank erosion flux calculation approach (default = 0)
