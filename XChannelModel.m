@@ -49,7 +49,7 @@ end
 %% Create folder for snapshots
 if Inputs.Outputs.CsvInt > 0;
     [SnapshotDir,~,~] = fileparts(Inputs.FileName);
-    SnapshotDir = [SnapshotDir,'\snapshots'];
+    SnapshotDir = [SnapshotDir,'\snapshots_',Inputs.FileName(1:end-4)];
     if ~exist(SnapshotDir,'dir')
         mkdir(SnapshotDir)
     end
