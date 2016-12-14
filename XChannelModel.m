@@ -69,7 +69,7 @@ while T < Inputs.Time.EndTime
     Cell.WetLastTimestep = Cell.Wet;
     
     %% Update bed level
-    Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT ./ Cell.Width / Inputs.Sed.Porosity;  
+    Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT ./ Cell.Width / (1-Inputs.Sed.Porosity);  
     
     %% Update bed composition
     if Inputs.Sed.SedType == 2 % if graded sediment
@@ -212,7 +212,7 @@ while T < Inputs.Time.EndTime
     % Diagnistics output
     if T >= DiagT + Inputs.Outputs.DiagInt && Inputs.Outputs.DiagInt > 0
         DiagT = DiagT + Inputs.Outputs.DiagInt;
-        fprintf('T=%gs, Q=%gm^3/s, q_s=%.2em3/s\n', T, Inputs.Hyd.Flow, sum(Cell.qsS_flow_kg))
+        fprintf('T=%gs, Q=%gkg/s, q_s=%.2em3/s\n', T, Inputs.Hyd.Flow, sum(Cell.qsS_flow_kg))
     end
     
     % CSV output
