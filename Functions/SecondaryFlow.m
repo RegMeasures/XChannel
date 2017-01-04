@@ -1,15 +1,33 @@
 function [Tau_N] = SecondaryFlow(HydInputs, Cell)
 %SECONDARYFLOW   Transverse shear stress due to secondary (spiral) flow
-%Calculate transverse shear stess due to secondary flow (also known as
-%spiral motion) induced by channel curvature. SECONDARYFLOW assumes
-%fully developed secondary flow induced by constant radius streamline
-%curvature.
+%Calculate transverse (normal) shear stess due to secondary flow (also 
+%known as spiral motion) induced by channel curvature. SECONDARYFLOW 
+%assumes fully developed secondary flow induced by constant radius 
+%streamline curvature.
 %
 %   [Tau_N] = SecondaryFlow(HydInputs, Cell)
 %
 %   Inputs:
-%
+%      HydInputs = Struct of user specified inputs relating to hydraulics 
+%                  as read in to Inputs.Hyd by ReadModelInputs. Fields of
+%                  HydInputs used by SECONDARYFLOW are:
+%                     .g       = acceleration due to gravity [m/s2]
+%                     .Kappa   = Von Karman's constant
+%                     .Chezy   = Chézy friction coefficient [m^0.5/s]
+%                     .Radius  = specified bend radius [m]
+%                     .ESpiral = user specified coefficient for spiral
+%                                motion
+%                     .Rho_W   = water density [kg/m3]
+%      Cell      = Struct of cell center properties initialised by
+%                  InitialiseVariables and set in earlier steps of 
+%                  XChannelModel. Fields of Cell used by SECONDARYFLOW are:
+%                     .NCells = number of cells across cross-section
+%                     .Wet    = mask indicating wet cells
+%                     .U      = depth averaged velocity in each cell [m/s]
+%                     .H      = water depth in each cell [m]
+%   
 %   Outputs:
+%      Tau_N     = Transverse shear stress due to secondary currents [N/m2]
 %
 %   References:
 %      Deltares, 2014. Delft3D-Flow User Manual Version 3.15.34158.
@@ -17,7 +35,8 @@ function [Tau_N] = SecondaryFlow(HydInputs, Cell)
 %         nearly-horizontal flow. Journal of Hydraulic Research, 24(1), 
 %         pp.19–37.
 %
-%   See also: XCHANNELMODEL
+%   See also: XCHANNELMODEL, READMODELINPUTS
+
 %% Initialise variables
 AlphaSpiral = NaN(Cell.NCells,1);
 SpiralIntensity = zeros(Cell.NCells,1);

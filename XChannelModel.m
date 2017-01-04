@@ -14,7 +14,7 @@ function [FinalXS, WL] = XChannelModel(Inputs)
 %
 %   FinalXS is the final cross-section profile at the end of the simulation.
 %
-%   see also ReadModelInputs
+%   See also: READMODELINPUTS
 
 %% Program setup
 if ~isdeployed
@@ -88,31 +88,23 @@ while T < Inputs.Time.EndTime
     if Inputs.Sed.SedType == 2
         Cell.Dg_phi = sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.Fi, 2);
         Cell.Dg_m = 2.^-Cell.Dg_phi ./ 1000;
-        Cell.SigmaG_phi = sqrt(sum(Cell.Fi .* ((ones(Cell.NCells,1)*Frac.Di_phi) - (Cell.Dg_phi*ones(1,Frac.NFracs))).^2, 2));
+        Cell.SigmaG_phi = sqrt(sum(Cell.Fi .* ...
+                                   ((ones(Cell.NCells,1)*Frac.Di_phi) - ...
+                                    (Cell.Dg_phi*ones(1,Frac.NFracs))).^2, 2));
     end
     
     %% Get new flow (if time series)
     if Inputs.Hyd.FlowType == 2;
-        Inputs.Hyd.Flow = interp1(Inputs.Hyd.FlowTS(:,1),Inputs.Hyd.FlowTS(:,2),T);
+        Inputs.Hyd.Flow = interp1(Inputs.Hyd.FlowTS(:,1), ...
+                                  Inputs.Hyd.FlowTS(:,2),T);
     end
     
     %% Calculate basic hydraulics
-    Cell.H = zeros(Cell.NCells,1);
-    Cell.U = zeros(Cell.NCells,1);
-    Cell.Tau_S = zeros(Cell.NCells,1);
-    
+
     WL = SetQ(Cell.Width,Cell.Z,Cell.WetLastTimestep,Inputs.Hyd);
-    Cell.Wet = (WL-Cell.Z >= Inputs.Hyd.DryFlc) | (Cell.WetLastTimestep & (WL-Cell.Z >= Inputs.Hyd.DryFlc / 2));
-    Cell.H(Cell.Wet) = WL - Cell.Z(Cell.Wet);
-    switch Inputs.Hyd.Roughness
-        case 1 % Manning roughness
-            Cell.Chezy = (Cell.H .^ (1/6)) / Inputs.Hyd.ManningN;
-        case 2 % Colebrook-white
-            Cell.Chezy = 18 * log10(12 * Cell.H / Inputs.Hyd.ks); % eqn 2.34b sedimentation engineering or 9.56 D3D
-    end
-    Cell.Chezy = max(Cell.Chezy, 0.001);
-    Cell.U(Cell.Wet) = Cell.Chezy(Cell.Wet) .* sqrt(Cell.H(Cell.Wet) * Inputs.Hyd.Slope);
-    Cell.Tau_S(Cell.Wet) = Inputs.Hyd.Rho_W * Inputs.Hyd.g * Cell.H(Cell.Wet) * Inputs.Hyd.Slope;
+    
+    [Cell.Chezy, Cell.H, Cell.U, Cell.Tau_S, Cell.Wet] = ...
+        BasicHydraulics(Cell.Z, Cell.WetLastTimestep, Inputs.Hyd, WL);
     
     %% Calculate transverse shear stress due to secondary flow
     [Cell.Tau_N] =  SecondaryFlow(Inputs.Hyd, Cell);
@@ -120,38 +112,60 @@ while T < Inputs.Time.EndTime
     Cell.Tau_Tot = sqrt(Cell.Tau_S.^2 + Cell.Tau_N.^2);
     Cell.UStar = sqrt(Cell.Tau_Tot / Inputs.Hyd.Rho_W);
     
-    %% Calculate fractional volumetric bedload transport due to flow (in cell centres)
+    %% Calculate fractional volumetric bedload transport due to flow
     Cell.ShieldsStress_i = (Cell.Tau_Tot * ones(1,Frac.NFracs)) ./ ...
-                          ((Inputs.Sed.Rho_S - Inputs.Hyd.Rho_W) * Inputs.Hyd.g * (ones(Cell.NCells,1)*Frac.Di_m));
+                           ((Inputs.Sed.Rho_S - Inputs.Hyd.Rho_W) * ...
+                            Inputs.Hyd.g * ...
+                            (ones(Cell.NCells,1) * Frac.Di_m));
                      
-    Cell.Active = (WL - Cell.Z) >= Inputs.Sed.SedThr; % Cells active for transport only if depth is greater than sed threshold
-    Edge.Active = [0; Cell.Active(1:end-1) .* Cell.Active(2:end); 0]; % Edge is active only if cells on both sides are active
+    Cell.Active = (WL - Cell.Z) >= Inputs.Sed.SedThr; 
+    % Cells are only active for transport if depth is greater than SedThr
+    
+    Edge.Active = [0; Cell.Active(1:end-1) .* Cell.Active(2:end); 0]; 
+    % Edge is active for transport only if cells on both sides are active
     
     [Cell.qsiTot_flow,Cell.ThetaCrit_i] = BedLoad(Inputs, Cell, Frac);
     
     Cell.qsTot_flow = sum(Cell.qsiTot_flow, 2);
+    
+    % qsS_flow_kg = Streamwise mass transport rate [kg/s/m]
     Cell.qsS_flow_kg = zeros(Cell.NCells,1);
-    Cell.qsS_flow_kg(Cell.Active) = Inputs.Sed.Rho_S *  Cell.qsTot_flow(Cell.Active,:) .* (Cell.Tau_S(Cell.Active) ./ Cell.Tau_Tot(Cell.Active)); % Streamwise mass transport rate [kg/s/m]
-    Cell.qsiN_flow = Cell.qsiTot_flow .* ((Cell.Tau_N ./ Cell.Tau_Tot) * ones(1, Frac.NFracs));
+    Cell.qsS_flow_kg(Cell.Active) = ...
+        Inputs.Sed.Rho_S *  Cell.qsTot_flow(Cell.Active,:) .* ...
+        (Cell.Tau_S(Cell.Active) ./ Cell.Tau_Tot(Cell.Active)); 
+    
+    Cell.qsiN_flow = Cell.qsiTot_flow .* ...
+                     ((Cell.Tau_N ./ Cell.Tau_Tot) * ones(1, Frac.NFracs));
     Cell.qsiN_flow(isnan(Cell.qsiN_flow)) = 0;
 
     %% Calculate cell edge parameters
+    % note: the level of upwinding vs central is controlled by 
+    % Inputs.ST.UpwindBedload
+    
     % Identify upwind cells
     C2E_Weights = (Cell.Tau_N(1:end-1) + Cell.Tau_N(2:end)) > 0;
     % Set weightings for LH cells (RH weightings = 1-C2E_Weights)
     C2E_Weights = Inputs.ST.UpwindBedload * C2E_Weights + ...
                   (1-Inputs.ST.UpwindBedload) * (C2E_Weights==0);
     
-    Edge.H = Centre2Edge(Cell.H, C2E_Weights, Edge.Active);
-    Edge.Tau_Tot = Centre2Edge(Cell.Tau_Tot, C2E_Weights, Edge.Active);    
-    Edge.ShieldsStress_i = Centre2Edge(Cell.ShieldsStress_i, C2E_Weights, Edge.Active);
-    Edge.qsiTot_flow = Centre2Edge(Cell.qsiTot_flow, C2E_Weights, Edge.Active);
-    Edge.qsiN_flow = Centre2Edge(Cell.qsiN_flow, C2E_Weights, Edge.Active);
-    Edge.ThetaCrit_i = Centre2Edge(Cell.ThetaCrit_i, C2E_Weights, Edge.Active);
-    Edge.Dg_m = Centre2Edge(Cell.Dg_m, C2E_Weights, Edge.Active);
+    % Calculate cell edge parameters using pre-calculated weightings
+    Edge.H               = Centre2Edge(Cell.H, C2E_Weights, Edge.Active);
+    Edge.Tau_Tot         = Centre2Edge(Cell.Tau_Tot, C2E_Weights, ...
+                                       Edge.Active);    
+    Edge.ShieldsStress_i = Centre2Edge(Cell.ShieldsStress_i, ...
+                                       C2E_Weights, Edge.Active);
+    Edge.qsiTot_flow     = Centre2Edge(Cell.qsiTot_flow, C2E_Weights, ...
+                                       Edge.Active);
+    Edge.qsiN_flow       = Centre2Edge(Cell.qsiN_flow, C2E_Weights, ...
+                                       Edge.Active);
+    Edge.ThetaCrit_i     = Centre2Edge(Cell.ThetaCrit_i, C2E_Weights, ...
+                                       Edge.Active);
+    Edge.Dg_m            = Centre2Edge(Cell.Dg_m, C2E_Weights, ...
+                                       Edge.Active);
     
-    %% Calculate sediment transport due to bed slope
-    Edge.Slope = [0; (Cell.Z(2:end) - Cell.Z(1:end-1)) ./ (Cell.N(2:end) - Cell.N(1:end-1)); 0];
+    %% Calculate transverse sediment transport due to bed slope
+    Edge.Slope = [0; (Cell.Z(2:end) - Cell.Z(1:end-1)) ./ ...
+                  (Cell.N(2:end) - Cell.N(1:end-1)); 0];
     Edge.qsiN_slope = BedSlope(Inputs.Slope, Edge, Frac);
     
     %% Fractional erosion/deposition due to flow and associated effects (i.e. everything except bank erosion)
