@@ -55,7 +55,7 @@ MPMexponent = 1.6            % Coefficient in MPM formula possible values are:
                              %   1.6 = correction suggested in Wong and Parker 2006 eq. 22 (default)
 
 % Hiding and exposure
-HidExp    = 3                % Hiding and exposure formulation
+HidExp    = 0                % Hiding and exposure formulation
                              %   0 = No hiding or exposure correction
                              %   1 = Ashida & Michiue formulation
                              %   2 = Wilcock and Crowe (automatically selected if STFormula = 2)
@@ -135,7 +135,7 @@ StartTime = 60000  %0        % [s] (default = 0)
 EndTime   = 200000 %340000   % [s]
 
 %% ============================== Outputs =================================
-DiagInt   = 0                % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
+DiagInt   = 900                % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
 PlotInt   = 720              % Plot update interval [s] (default = DT, 0 = no diagnostics output)
 VideoOut  = 1                % Output cross-section video. Note: PlotInt must be > 0 for video output.(default = 0 i.e. no video)
 CsvInt    = 900              % Output interval for CSV files, 0 = no CSV output, >EndTime = Output final geometry (default = 0)

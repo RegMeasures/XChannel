@@ -3,8 +3,9 @@ function [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs)
 % Populate/calculate variables where possible/necessary before model
 % starts
 
-% note: Not all variables are created - only ones which are needed for
-% plotting or calculation
+% note: Not all variables are created - only ones which are needed prior to
+% there definition elsewhere - e.g. variables used for plot generation or
+% calculation
 
 %% Initialise geometry
 Cell.NCells = size(Inputs.Hyd.InitialGeometry,1);

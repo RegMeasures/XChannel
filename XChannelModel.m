@@ -1,21 +1,20 @@
 function [FinalXS, WL] = XChannelModel(Inputs)
-% Single cross-section 1D (cross-channel) morphological model
+%XCHANNELMODEL Single cross-section 1D (cross-channel) morphological model
+%Morphological model for simulating the evolution of cross-section shape
+%for a single cross section
 %
-% [FinalXS] = XChannelModel
-%     Run model prompting user to select input file
+%   [FinalXS] = XChannelModel() Runs model prompting user to select 
+%   input file
 %
-% [FinalXS] = XChannelModel(FileName)
-%     Run model with inputs from Filename where filename is a text file in
-%     standard format
+%   [FinalXS] = XChannelModel(FileName) Runs model with inputs from
+%   Filename, where filename is a text file in standard format
 %
-% [FinalXS] = XChannelModel(Inputs)
-%     Run model with inputs contained in struct created by ReadModelInputs
+%   [FinalXS] = XChannelModel(Inputs) Runs model with inputs contained in
+%   struct created by ReadModelInputs
 %
-% FinalXS is the final cross-section profile at the end of the simulation.
+%   FinalXS is the final cross-section profile at the end of the simulation.
 %
-% FileName is optional name(and path) of input file
-% If FileName not specified user will be prompted to select file
-% Richard Measures 2015
+%   see also ReadModelInputs
 
 %% Program setup
 if ~isdeployed
@@ -115,15 +114,9 @@ while T < Inputs.Time.EndTime
     Cell.U(Cell.Wet) = Cell.Chezy(Cell.Wet) .* sqrt(Cell.H(Cell.Wet) * Inputs.Hyd.Slope);
     Cell.Tau_S(Cell.Wet) = Inputs.Hyd.Rho_W * Inputs.Hyd.g * Cell.H(Cell.Wet) * Inputs.Hyd.Slope;
     
-    %% Calculate secondary flow
-    Cell.AlphaSpiral = NaN(Cell.NCells,1);
-    Cell.SpiralIntensity = zeros(Cell.NCells,1);
-    Cell.Tau_N = zeros(Cell.NCells,1);
+    %% Calculate transverse shear stress due to secondary flow
+    [Cell.Tau_N] =  SecondaryFlow(Inputs.Hyd, Cell);
     
-    Cell.AlphaSpiral(Cell.Wet) = min(sqrt(Inputs.Hyd.g) ./ (Inputs.Hyd.Kappa * Cell.Chezy(Cell.Wet)), 0.5); % Equation 9.156 in Delft3D-FLOW User Manual or Eq8 Kalkwijk & Booji 1986
-    Cell.SpiralIntensity(Cell.Wet) = Cell.H(Cell.Wet) .* Cell.U(Cell.Wet) / Inputs.Hyd.Radius; % Eq 9.160 (I_be (intensity due to bend) only as I_ce (coriolis) is negligable)
-    
-    Cell.Tau_N(Cell.Wet) = -2 * Inputs.Hyd.ESpiral * Inputs.Hyd.Rho_W * Cell.AlphaSpiral(Cell.Wet).^2 .* (1 - Cell.AlphaSpiral(Cell.Wet) / 2) .* Cell.U(Cell.Wet) .* Cell.SpiralIntensity(Cell.Wet); % Eq9.145 D3D or Eq26 Kalkwijk & Booji 1986
     Cell.Tau_Tot = sqrt(Cell.Tau_S.^2 + Cell.Tau_N.^2);
     Cell.UStar = sqrt(Cell.Tau_Tot / Inputs.Hyd.Rho_W);
     
@@ -178,7 +171,8 @@ while T < Inputs.Time.EndTime
     Bank.Active = TriggerBanks(Inputs.Bank.Trigger, Cell, Bank);
     
     % Calculate bank erosion flux
-    Cell.Delta_i_bank = BankFlux(Inputs.Bank.Flux, Cell, Edge, Frac, Inputs.Time.dT, Bank);
+    Cell.Delta_i_bank = BankFlux(Inputs.Bank.Flux, Cell, Frac, ...
+                                 Inputs.Time.dT, Bank);
     Cell.Delta_bank = sum(Cell.Delta_i_bank, 2);
     
     %% Calculate total erosion/deposition

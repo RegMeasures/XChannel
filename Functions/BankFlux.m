@@ -1,11 +1,31 @@
-function [Delta_i_bank] = BankFlux(Options, Cell, Edge, Frac, dT, Bank)
-% Calculate fractional volumetric sediment flux rate due to bank erosion
-% Delta_i_bank = NCells x NFracs matrix containing fractional flux rate
-% into and out of each cell due to bank erosion.
+function [Delta_i_bank] = BankFlux(Options, Cell, Frac, dT, Bank)
+%BANKFLUX   Fractional volumetric sediment flux due to bank erosion   
+%BANKFLUX is called by XChannelModel to calculate fractional sediment
+%flux between cells due to bank erosion. IndentifyBanks, BankStencil and 
+%TriggerBanks are used to identify active banks and the cells associated 
+%with their top and bottom prior to calling BANKFLUX.
+%
+%   [Delta_i_bank] = BANKFLUX(Options, Cell, Edge, Frac, dT, Bank)
+%   
+%   Inputs:
+%      Options    = Bank flux calculation options as read in to 
+%                   Inputs.Bank.Flux struct by ReadModelInputs
+%      Cell       = Struct of cell center properties initialised by
+%                   InitialiseVariables and set in earlier steps of 
+%                   XChannelModel
+%      Frac       = Struct of sediment fraction properties created by
+%                   InitialiseVariables
+%      dT         = timestep in seconds
+%      Bank       = Struct of bank properties created by BankStencil
+%
+%   Outputs:
+%      Delta_i_bank = NCells x NFracs matrix containing fractional flux
+%                     rate [m3/m/s] into and out of each cell due to bank 
+%                     erosion.
+%
+%   See also: XCHANNELMODEL, IDENTIFYBANKS, BANKSTENCIL, TRIGGERBANKS,
+%   INITIALISEVARIABLES, READMODELINPUTS
 
-% FluxRate = rate of sediment transport due to bank erosion [m3/m/s]
-
-%qsiN_Bank = zeros(Edge.NEdges,1);
 Delta_i_bank = zeros(Cell.NCells,Frac.NFracs);
 
 for BankNo = 1:Bank.NBanks
@@ -15,7 +35,8 @@ for BankNo = 1:Bank.NBanks
         Top = Bank.Top(BankNo);
         Bottom = Bank.Bottom(BankNo);
 
-        % Calculate total flux from top to toe
+        %% Calculate total flux from top to toe
+        % FluxRate = rate of sediment transport due to bank erosion [m3/m/s]
         switch Options.Approach
             case 0
                 % No bank erosion flux
@@ -44,7 +65,7 @@ for BankNo = 1:Bank.NBanks
                 FluxRate = Options.BErodibility * ToeTransportRate * Slope;
         end
 
-        % Calculate fractional flux in and out of each cell
+        %% Calculate fractional flux in and out of each cell
         if Options.StencilMix
             if Top>Bottom
                 Delta_i_bank(Bottom+1:Top,:) = Delta_i_bank(Bottom+1:Top,:) - FluxRate * Cell.Fi(Bottom+1:Top,:);

@@ -1,21 +1,29 @@
-function [AbsBankError, ErrorSign] = BankPosError(Dist, ObsBed, ModelBed, Radius, WL)
-% Compute error in bank (waters edge) position
+function [AbsBankError, ErrorSign] = BankPosError(Dist, ObsBed, ...
+                                                  ModelBed, Radius, WL)
+%BANKPOSERROR   Error (diff) in bank position between two cross-sections
+%Calculate the horizontal difference in outside bend bank position between
+%two cross-sections. Bank position is defined as the point at which a
+%horizontal water surface (defined by WL) intersects the outside bank. Bank
+%position is linearly interpolated between cell-center positions.
 %
-% Inputs:
-%   Dist = vector of cross-channel positions of cell-centers 
-%          (in increasing order)
-%   ObsBed = surveyed bed level of cell centers (same size array as Dist)
-%   ModelBed = modelled bed level of cell centers
-%   Radius = bend radius (used only to determin which side of the XS is the
-%            outside of the bend)
-%   WL = Water level (used for computing bank position)
-%
-% Outputs:
-%   AbsBankError = Absoulte error in bank position calculated as difference
-%                  between waters edge position for observed and modelled
-%                  final topographies
-%   ErrorSign = Direction of error: +ve = too much bank erosion
-%                                   -ve = not enough bank erosion
+%   [AbsBankError, ErrorSign] = BANKPOSERROR(Dist, ObsBed, ModelBed, ...
+%                                            Radius, WL)
+%   Inputs:
+%      Dist     = vector of cross-channel positions of cell-centers 
+%                 (in increasing order)
+%      ObsBed   = surveyed bed level of cell centers 
+%                 (same size array as Dist)
+%      ModelBed = modelled bed level of cell centers
+%      Radius   = bend radius (used only to determin which side of the XS 
+%                 is the outside of the bend)
+%      WL = Water level (used for computing bank position)
+%   
+%   Outputs:
+%      AbsBankError = Absoulte error in bank position calculated as difference
+%                     between waters edge position for observed and modelled
+%                     final topographies
+%      ErrorSign = Direction of error: +ve = too much bank erosion
+%                                      -ve = not enough bank erosion
 
 % Validate inputs
 assert(isvector(Dist))

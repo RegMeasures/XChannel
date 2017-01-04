@@ -1,9 +1,35 @@
 function [Bank] = BankStencil(Options, Cell, Edge)
-% Apply bank erosion stencil to identify top and bottom of bank
+%BANKSTENCIL   Apply bank stencil to identify bank top and bottom (toe)
+%For the purposes of bank erosion implementation in 2D models it is not 
+%always appropriate to have bank top and bottom (toe) cells located
+%adjacent to each other. BANKSTENCIL identifies the top and bottom cells
+%associated with each identified bank. The identified cells are then used
+%for flux calculation and bed level updating.
 %
-% Bank.NBanks = Number of active banks currently in model
-% Bank.Top = vector (size [NBanks,1]) listing cellNo for the top of each bank
-% Bank.Bottom = vector (size [NBanks,1]) listing cellNo for the bottom of each bank
+%   [Bank] = BANKSTENCIL(Options, Cell, Edge)
+%
+%   Inputs:
+%      Options = Bank flux calculation options as read in to 
+%                Inputs.Bank.Stencil struct by ReadModelInputs by
+%      Cell    = Struct of cell center properties initialised by
+%                InitialiseVariables and set in earlier steps of 
+%                XChannelModel
+%      Edge    = Struct of cell edge properties initialised by
+%                InitialiseVariables and set in earlier steps of 
+%                XChannelModel
+%   Outputs:
+%      Bank = Struct containing details of bank locations and top/bottom:
+%         Bank.NBanks = Number of active banks currently in model
+%         Bank.Top    = vector (size [NBanks,1]) listing cellNo for the top
+%                       of each bank
+%         Bank.Bottom = vector (size [NBanks,1]) listing cellNo for the 
+%                       bottom of each bank
+%
+%   See also: XCHANNELMODEL, IDENTIFYBANKS, BANKFLUX, TRIGGERBANKS,
+%   INITIALISEVARIABLES, READMODELINPUTS
+
+% Possible future addition: Should we add some code to check for and
+% remove duplicate banks?
 
 Bank.NBanks = sum(Edge.IsBank ~= 0);
 Bank.Top = zeros(Bank.NBanks,1);
@@ -24,13 +50,21 @@ for ii = EdgeNos(Edge.IsBank~=0)
         % Bank top in cell adjacent to IDed bank edge
         Bank.Top(BankNo) = ii - 0.5 - Edge.IsBank(ii)/2;
     else
+        % Possible bank top cell if: 
+        %  - on the correct side of the bank ID location, and
+        %  - within TopCellLim cells of the bank ID location, and
+        %  - within TopDistLim distance of bank ID location;
+        %  - Or is adjacent cell.
+        % (outputs vector of true/false corresponding to each cell)
         PossibleTop = (-Edge.IsBank(ii) * CellsToBank > 0 & ...
                        -Edge.IsBank(ii) * CellsToBank < Options.TopCellLim & ...
                        DistToBank < Options.TopDistLim) | ...
                       (-Edge.IsBank(ii) * CellsToBank == 1);
         switch Options.Top
             case 1
-                
+                % NOTE: there are currently no available options for
+                % applying a bank top stencil so this is just a holder for
+                % potential future implementation.
         end
     end
     
@@ -67,8 +101,6 @@ for ii = EdgeNos(Edge.IsBank~=0)
         end
     end
 end
-
-% do we need to do some cleaning to check for duplicate banks??
 
 end
 
