@@ -3,18 +3,24 @@ function [FinalXS, WL] = XChannelModel(Inputs)
 %Morphological model for simulating the evolution of cross-section shape
 %for a single cross section
 %
-%   [FinalXS] = XChannelModel() Runs model prompting user to select 
+%   [FinalXS, WL] = XChannelModel() Runs model prompting user to select 
 %   input file
 %
-%   [FinalXS] = XChannelModel(FileName) Runs model with inputs from
-%   Filename, where filename is a text file in standard format
+%   [FinalXS, WL] = XChannelModel(FileName) Runs model with inputs from
+%   FileName, where FileName is a string giving the name and path to a text
+%   file in standard format
 %
-%   [FinalXS] = XChannelModel(Inputs) Runs model with inputs contained in
-%   struct created by ReadModelInputs
+%   [FinalXS, WL] = XChannelModel(Inputs) Runs model with inputs contained 
+%   in struct created by ReadModelInputs
+%   
+%   Outputs:
+%      FinalXS = Cross-section profile at the end of the simulation given
+%                as a NCells x 2 matrix where column 1 = distance across
+%                channel (to cell center) and column 2 = elevation (of 
+%                corresponding cell center).
+%      WL      = Water level at the end of the simulation [m]
 %
-%   FinalXS is the final cross-section profile at the end of the simulation.
-%
-%   See also: READMODELINPUTS
+%   See also: READMODELINPUTS.
 
 %% Program setup
 if ~isdeployed
@@ -68,29 +74,43 @@ while T < Inputs.Time.EndTime
     Cell.WetLastTimestep = Cell.Wet;
     
     %% Update bed level
-    Cell.Z = Cell.Z + Cell.Delta_tot * Inputs.Time.dT ./ Cell.Width / (1-Inputs.Sed.Porosity);  
+    Cell.Z = Cell.Z + (Cell.Delta_tot * Inputs.Time.dT ./ Cell.Width) / ...
+                      (1 - Inputs.Sed.Porosity);  
     
     %% Update bed composition
     if Inputs.Sed.SedType == 2 % if graded sediment
-        % NEEDS MORE THOUGHT HERE ABOUT MIXING MODEL...
-        % Fi = (Fi * DA + Delta_i_tot * DT) / DA; % Could mix new sed in before moving from active to sub-surface??? Timestep sensitive?
-        Cell.SubSurfFlux_i = (max(-Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.BulkFi - ...
-                        (max(Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* Cell.Fi; % Fractional volumetric flux rate into active layer from subsurface [m3/s/m]
-        % Fi = (Fi * DA - SubSurfFlux_i) / DA;
-        Cell.Fi = (Cell.Fi .* (Cell.Width * ones(1,Frac.NFracs)) * Inputs.Sed.DA + ...
-                   (Cell.Delta_i_tot + Cell.SubSurfFlux_i) * Inputs.Time.dT ) ./ ...
+        
+        % Fractional volumetric flux rate into active layer from subsurface 
+        Cell.SubSurfFlux_i = ...
+            (max(-Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* ...
+                Cell.BulkFi - ...
+            (max(Cell.Delta_tot,0) * ones(1,Frac.NFracs)) .* ...
+                Cell.Fi; % [m3/s/m]
+        
+        % Update active layer composition
+        % (includes updates due to transport (Delta_i_tot) and interaction
+        % with subsurface (SubSurfFlux_i)
+        % Fi = (Fi * DA * width - SubSurfFlux_i) / (DA * width);
+        Cell.Fi = (Cell.Fi .* (Cell.Width * ones(1,Frac.NFracs)) * ...
+                       Inputs.Sed.DA + ...
+                       (Cell.Delta_i_tot + Cell.SubSurfFlux_i) * ...
+                       Inputs.Time.dT ) ./ ...
                   (Inputs.Sed.DA * (Cell.Width * ones(1,Frac.NFracs)));
+              
+        % Make sure there are no negative values of Fi and that Sum(Fi) = 1
+        % this prevents small errors propogating but it could cause small 
+        % mass balance errors
         Cell.Fi(Cell.Fi<0) = 0;
-        Cell.Fi = Cell.Fi ./ (sum(Cell.Fi,2) * ones(1,Frac.NFracs)); % To prevent small errors propogating?
+        Cell.Fi = Cell.Fi ./ (sum(Cell.Fi,2) * ones(1,Frac.NFracs)); 
     end
 
     %% Update sediment properties (if graded sediment)
     if Inputs.Sed.SedType == 2
         Cell.Dg_phi = sum((ones(Cell.NCells,1)*Frac.Di_phi) .* Cell.Fi, 2);
         Cell.Dg_m = 2.^-Cell.Dg_phi ./ 1000;
-        Cell.SigmaG_phi = sqrt(sum(Cell.Fi .* ...
-                                   ((ones(Cell.NCells,1)*Frac.Di_phi) - ...
-                                    (Cell.Dg_phi*ones(1,Frac.NFracs))).^2, 2));
+        Cell.SigmaG_phi = ...
+            sqrt(sum(Cell.Fi .*((ones(Cell.NCells,1) * Frac.Di_phi) - ...
+                                (Cell.Dg_phi*ones(1,Frac.NFracs))).^2, 2));
     end
     
     %% Get new flow (if time series)
@@ -168,10 +188,21 @@ while T < Inputs.Time.EndTime
                   (Cell.N(2:end) - Cell.N(1:end-1)); 0];
     Edge.qsiN_slope = BedSlope(Inputs.Slope, Edge, Frac);
     
-    %% Fractional erosion/deposition due to flow and associated effects (i.e. everything except bank erosion)
-    Cell.Delta_i_flow = Edge.qsiN_flow(1:end-1,:) - Edge.qsiN_flow(2:end,:); % Fractional volumetric flux rate into cell from neighboring cells due to flow [m3/s/m]
-    Cell.Delta_i_slope = Edge.qsiN_slope(1:end-1,:) - Edge.qsiN_slope(2:end,:);
-    Cell.Delta_flow = sum(Cell.Delta_i_flow, 2); % Total (i.e. all fractions) flux into cell from neighbouring cells due to flow
+    %% Fractional erosion/deposition due to flow and associated effects 
+    %(i.e. everything except bank erosion)
+    
+    % Fractional volumetric flux rate into each cell [(m3/s)/m] due to:
+    % -> Flow 
+    Cell.Delta_i_flow = Edge.qsiN_flow(1:end-1,:) - ...
+                        Edge.qsiN_flow(2:end,:); 
+    % -> Slope
+    Cell.Delta_i_slope = Edge.qsiN_slope(1:end-1,:) - ...
+                         Edge.qsiN_slope(2:end,:);
+                     
+    % Total (i.e. all fractions) flux into each cell [(m3/s)/m] due to:
+    % -> Flow                 
+    Cell.Delta_flow = sum(Cell.Delta_i_flow, 2); 
+    % -> Slope
     Cell.Delta_slope = sum(Cell.Delta_i_slope, 2);
     
     %% Calculate sediment flux rate due to bank erosion
@@ -186,18 +217,32 @@ while T < Inputs.Time.EndTime
     
     % Calculate bank erosion flux
     Cell.Delta_i_bank = BankFlux(Inputs.Bank.Flux, Cell, Frac, ...
-                                 Inputs.Time.dT, Bank);
-    Cell.Delta_bank = sum(Cell.Delta_i_bank, 2);
+                                 Inputs.Time.dT, Bank); % [(m3/s)/m]
+    Cell.Delta_bank = sum(Cell.Delta_i_bank, 2); % [(m3/s)/m]
     
     %% Calculate total erosion/deposition
-    Cell.Delta_i_tot = Cell.Delta_i_flow + Cell.Delta_i_slope + Cell.Delta_i_bank;
+    % Note that stored erosion only affects bed level updating, not 
+    % composition.
+    
+    % Total erosion/deposition by fraction [(m3/s)/m]
+    Cell.Delta_i_tot = Cell.Delta_i_flow + ...
+                       Cell.Delta_i_slope + ...
+                       Cell.Delta_i_bank;
+    
+    % Total erosion/deposition for the purposes of bed level updating 
     if Inputs.Bank.Update.StoredBE
         % Store bank erosion if intermittent update option selected
-        Cell.Delta_store = StoreErosion(Inputs, Cell, Bank);
-        Cell.EroStore = Cell.EroStore - Cell.Delta_store * Inputs.Time.dT;
-        Cell.Delta_tot = Cell.Delta_flow + Cell.Delta_slope + Cell.Delta_bank + Cell.Delta_store;
+        Cell.Delta_store = StoreErosion(Inputs, Cell, Bank); % [(m3/s)/m]
+        Cell.EroStore = Cell.EroStore - ...
+                        Cell.Delta_store * Inputs.Time.dT; % [(m3/m)/dt]
+        Cell.Delta_tot = Cell.Delta_flow + ...
+                         Cell.Delta_slope + ...
+                         Cell.Delta_bank + ...
+                         Cell.Delta_store; % [(m3/s)/m]
     else
-        Cell.Delta_tot = Cell.Delta_flow + Cell.Delta_slope + Cell.Delta_bank;
+        Cell.Delta_tot = Cell.Delta_flow + ...
+                         Cell.Delta_slope + ...
+                         Cell.Delta_bank; % [(m3/s)/m]
     end
     
     %% Outputs
@@ -205,7 +250,8 @@ while T < Inputs.Time.EndTime
     if T >= PlotT + Inputs.Outputs.PlotInt && Inputs.Outputs.PlotInt > 0
         % Update plot
         PlotT = PlotT + Inputs.Outputs.PlotInt;
-        UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Inputs.Hyd.Flow, PlotSed)
+        UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, ...
+                     Inputs.Hyd.Flow, PlotSed)
         % Write video frame
         if Inputs.Outputs.VideoOut == 1
             if PlotSed
@@ -220,13 +266,15 @@ while T < Inputs.Time.EndTime
     % Diagnistics output
     if T >= DiagT + Inputs.Outputs.DiagInt && Inputs.Outputs.DiagInt > 0
         DiagT = DiagT + Inputs.Outputs.DiagInt;
-        fprintf('T=%gs, Q=%gkg/s, q_s=%.2em3/s\n', T, Inputs.Hyd.Flow, sum(Cell.qsS_flow_kg))
+        fprintf('T=%gs, Q=%gkg/s, q_s=%.2em3/s\n', ...
+                 T, Inputs.Hyd.Flow, sum(Cell.qsS_flow_kg))
     end
     
     % CSV output
     if T >= CsvT + Inputs.Outputs.CsvInt && Inputs.Outputs.CsvInt > 0
         CsvT = CsvT + Inputs.Outputs.CsvInt;
-        csvwrite(sprintf('%s\\BedSnapshot_T=%i.out',SnapshotDir,T),[Cell.N,Cell.Z]);
+        csvwrite(sprintf('%s\\BedSnapshot_T=%i.out', SnapshotDir, T), ...
+                 [Cell.N, Cell.Z]);
     end
 end
 

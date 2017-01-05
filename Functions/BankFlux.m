@@ -36,7 +36,7 @@ for BankNo = 1:Bank.NBanks
         Bottom = Bank.Bottom(BankNo);
 
         %% Calculate total flux from top to toe
-        % FluxRate = rate of sediment transport due to bank erosion [m3/m/s]
+        % FluxRate = rate of sediment flux due to bank erosion [m3/m/s]
         switch Options.Approach
             case 0
                 % No bank erosion flux
@@ -47,10 +47,11 @@ for BankNo = 1:Bank.NBanks
                 ExcessHeight = max((Cell.Z(Top) - Cell.Z(Bottom)) - ...
                                    Options.Repose * CellSeperation, 0);
                 FluxRate = Options.SlipRatio * ExcessHeight/2 * ...
-                           sum(Cell.Width([Top,Bottom]))/2 / dT; % Total volumetric sed flux as a result of individual bank eroding [m3/m/s]
+                           sum(Cell.Width([Top,Bottom]))/2 / dT;
             case 2
                 % Flux based on bank toe erosion rate (THETSD approach)
-                ToeErosionRate = -sum(Cell.Delta_i_flow(Bottom,:) + Cell.Delta_i_slope(Bottom,:), 2);
+                ToeErosionRate = -sum(Cell.Delta_i_flow(Bottom,:) + ...
+                                      Cell.Delta_i_slope(Bottom,:), 2);
                 ToeErosionRate = max(ToeErosionRate,0);
                 FluxRate = Options.ThetSD * ToeErosionRate;
             case 3
@@ -67,14 +68,24 @@ for BankNo = 1:Bank.NBanks
 
         %% Calculate fractional flux in and out of each cell
         if Options.StencilMix
+            % Mix sediment through each cell between bank top and bottom
             if Top>Bottom
-                Delta_i_bank(Bottom+1:Top,:) = Delta_i_bank(Bottom+1:Top,:) - FluxRate * Cell.Fi(Bottom+1:Top,:);
-                Delta_i_bank(Bottom:Top-1,:) = Delta_i_bank(Bottom:Top-1,:) + FluxRate * Cell.Fi(Bottom+1:Top,:);
+                Delta_i_bank(Bottom+1:Top,:) = ...
+                    Delta_i_bank(Bottom+1:Top,:) - ...
+                    FluxRate * Cell.Fi(Bottom+1:Top,:);
+                Delta_i_bank(Bottom:Top-1,:) = ...
+                    Delta_i_bank(Bottom:Top-1,:) + ...
+                    FluxRate * Cell.Fi(Bottom+1:Top,:);
             else
-                Delta_i_bank(Top:Bottom-1,:) = Delta_i_bank(Top:Bottom-1,:) - FluxRate * Cell.Fi(Top:Bottom-1,:);
-                Delta_i_bank(Top+1:Bottom,:) = Delta_i_bank(Top+1:Bottom,:) + FluxRate * Cell.Fi(Top:Bottom-1,:);
+                Delta_i_bank(Top:Bottom-1,:) = ...
+                    Delta_i_bank(Top:Bottom-1,:) - ...
+                    FluxRate * Cell.Fi(Top:Bottom-1,:);
+                Delta_i_bank(Top+1:Bottom,:) = ...
+                    Delta_i_bank(Top+1:Bottom,:) + ...
+                    FluxRate * Cell.Fi(Top:Bottom-1,:);
             end
         else
+            % Transport sediment directly from bank top to toe
             FluxRate_i = FluxRate * Cell.Fi(Top,:);
             Delta_i_bank(Top,:) = Delta_i_bank(Top,:) - FluxRate_i;
             Delta_i_bank(Bottom,:) = Delta_i_bank(Bottom,:) + FluxRate_i;

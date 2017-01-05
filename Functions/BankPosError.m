@@ -19,11 +19,13 @@ function [AbsBankError, ErrorSign] = BankPosError(Dist, ObsBed, ...
 %      WL = Water level (used for computing bank position)
 %   
 %   Outputs:
-%      AbsBankError = Absoulte error in bank position calculated as difference
-%                     between waters edge position for observed and modelled
-%                     final topographies
+%      AbsBankError = Absoulte error in bank position calculated as 
+%                     difference between waters edge position for observed 
+%                     and modelled final cross-section
 %      ErrorSign = Direction of error: +ve = too much bank erosion
 %                                      -ve = not enough bank erosion
+%
+%   See also: GETMODELERROR
 
 % Validate inputs
 assert(isvector(Dist))

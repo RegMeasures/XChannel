@@ -1,23 +1,33 @@
-function [AbsError, ErrorSign] = GetModelError(OptIn,OptVar,Inputs,BankTestWL,Quiet,LineH)
-% Wrapper to run XChannelModel in optimisation routine and return error
+function [AbsError, ErrorSign] = GetModelError(OptIn, OptVar, Inputs, ...
+                                               BankTestWL, Quiet, LineH)
+%GETMODELERROR   Run XChannelModel with modified parameters & return error
 %
-% RMSE = GetModelError(OptIn,OptVar,Inputs,Quiet)
+%   [AbsError, ErrorSign] = GetModelError(OptIn, OptVar, Inputs, ...
+%                                         BankTestWL ,Quiet, LineH)
 %
-%   where:
-% OptIn  = vector of parameter value corresponding to parameters named in
-%          OptVar
-% OptVar = Parametr names for optimisation (cell array of strings)
-% Inputs = XChannelModel inputs as read by ReadModelInputs
-% Quiet  = Boolean - True = no outputs, False = outputs as specified in
-%          Inputs.Outputs
-% LineH  = LineHandle for series of points to be updated with convergance
-%          (optional - if omitted no data will be plotted)
+%   Inputs:
+%      OptIn  = vector of parameter value corresponding to parameters named
+%               in OptVar
+%      OptVar = Parameter names for optimisation (cell array of strings). 
+%               Parameters enabled for optimisation are restricted to:
+%                  - Repose
+%                  - ThetSD
+%                  - QsBeRatio
+%                  - BErodibility
+%      Inputs = XChannelModel inputs as read by ReadModelInputs (struct)
+%      Quiet  = True = no outputs, False = outputs as specified by 
+%               Inputs.Outputs (boolean)
+%      LineH  = LineHandle for series of points to be updated with
+%               convergance (optional - if omitted no data will be plotted)
+%   
+%   Outputs:
+%      AbsError  = Absoulte error in horizontal bank position calculated as 
+%                  difference between waters edge position for observed 
+%                  and modelled final cross-section
+%      ErrorSign = Direction of error: +ve = too much bank erosion
+%                                      -ve = not enough bank erosion
 %
-% Parameters enabled for optimisation are currently restricted to:
-%  - Repose
-%  - ThetSD
-%  - QsBeRatio
-%  - BErodibility
+%   See also: XCHANNELMODEL, BANKPOSERROR, AUTOFIT, READMODELINPUTS.
 
 %% Turn off plots and diagnostics for quicker simulation
 if Quiet
@@ -42,7 +52,7 @@ for ii = 1:length(OptVar)
 end
 
 %% Run the model and calculate the error
-[FinalXS, WL] = XChannelModel(Inputs);
+[FinalXS, ~] = XChannelModel(Inputs);
 %AbsError = rmse(Inputs.Hyd.InitialGeometry(:,3), FinalXS(:,2));
 [AbsError, ErrorSign] = BankPosError(FinalXS(:,1), ...
                                      Inputs.Hyd.InitialGeometry(:,3), ...

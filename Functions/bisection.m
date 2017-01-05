@@ -1,38 +1,56 @@
-function [solution] = bisection(f,high,low,tol,ItMax)
-% simple bisection solver
-% f = function where we desire to find f(solution) = 0
-% high = initial high guess i.e. f(high>0)
-% low = initial low guess i.e. f(low<0)
-% tol = tolerance
-% Can handle solution outside initial range provided initial range is reasonably
-% close...
+function [X] = bisection(f, Xhigh, Xlow, tol, ItMax)
+%BISECTION   Solve f(X) = 0 using bisection
+%
+%   [X] = bisection(f, Xhigh, Xlow, tol, ItMax) Solves f(X) = 0 using the
+%   bisection method. The search is computed using the initial range
+%   Xlow < X < Xhigh and is completed when abs(f(X)) < tol. If f(Xlow)and 
+%   f(Xhigh) have the same sign then the initial boundaries are 
+%   iteratively moved, maintaining the same range, to try and find
+%   boundaries which span f(X) = 0.
+%
+%   BISECTION returns a warning if the maximum number of iterations is
+%   reaches and a satisfactory solution of X has not been found.
+
+% flip bounds if required
+if f(Xhigh) < f(Xlow)
+    tempHigh = Xhigh;
+    Xhigh = Xlow;
+    Xlow = tempHigh;
+end
+
+Iteration = 0;
 
 % check range
-while f(high)<0
-    high = high + (high-low);
+Range = Xhigh - Xlow;
+while f(Xhigh) < 0  && Iteration < ItMax;
+    Xhigh = Xhigh + Range;
+    Xlow = Xlow + Range;
+    Iteration = Iteration + 1;
 end
-while f(low)>0
-    low = low - (high-low);
+while f(Xlow)>0  && Iteration < ItMax;
+    Xlow = Xlow - Range;
+    Xhigh = Xhigh - Range;
+    Iteration = Iteration + 1;
 end
 
 % find solution
-solution = (high+low)/2;
-err = f(solution);
-Iteration = 0;
+X = (Xhigh+Xlow)/2;
+err = f(X);
 while abs(err) > tol && Iteration < ItMax;
     Iteration = Iteration + 1;
-    if err>0
-        high = solution;
+    if err > 0
+        Xhigh = X;
     else
-        low = solution;
+        Xlow = X;
     end
-    solution = (high+low)/2;
-    err = f(solution);
+    X = (Xhigh + Xlow) / 2;
+    err = f(X);
 end
 
-if Iteration > ItMax
-    fprintf('WARNING: max number of iterations exceeded in routine bisection\n')
-    fprintf('         error (%g) exceeds tolerance (%g)\n',err,tol)
+% check solution
+if abs(err) > tol
+    warning(['max number of iterations reached in routine bisection. ', ...
+             'Error (%g) exceeds tolerance (%g).'], err, tol)
 end
 
 end

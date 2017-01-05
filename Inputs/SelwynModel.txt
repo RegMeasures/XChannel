@@ -43,7 +43,7 @@ UpwindBedload = 1            % Scheme for calculating bedload at cell edges: 0<=
 STFormula = 1                % Sediment transport formula:
                              %   1 = Meyer-Peter-Muller (needs: TauCrit, MPMcoef, MPMexponent)
                              %   2 = Wilcock and Crowe
-TauCrit   = 0.047            % Critical shields stress for transport (for STFormula = 1). Possible values:
+ThetaCrit   = 0.047          % Critical shields stress for transport (for STFormula = 1). Possible values:
                              %   0.047  = original MPM '48 and also Wong and Parker 2006 eq. 22 (default)
                              %   0.0495 = correction suggested in Wong and Parker 2006 eq. 24
 MPMcoef   = 4.93             % Coefficient in MPM formula possible values are:
@@ -135,7 +135,7 @@ StartTime = 60000  %0        % [s] (default = 0)
 EndTime   = 200000 %340000   % [s]
 
 %% ============================== Outputs =================================
-DiagInt   = 900                % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
+DiagInt   = 900              % Diagnostics update interval [s] (default = DT, 0 = no diagnostics output)
 PlotInt   = 720              % Plot update interval [s] (default = DT, 0 = no diagnostics output)
 VideoOut  = 1                % Output cross-section video. Note: PlotInt must be > 0 for video output.(default = 0 i.e. no video)
 CsvInt    = 900              % Output interval for CSV files, 0 = no CSV output, >EndTime = Output final geometry (default = 0)

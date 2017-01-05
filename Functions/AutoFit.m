@@ -1,4 +1,5 @@
-function [x,CalibError,ValidError] = AutoFit(Inputs, OptVar, x0, lb, ub, Scenario)
+function [x,CalibError,ValidError] = AutoFit(Inputs, OptVar, x0, lb, ...
+                                             ub, Scenario)
 % Auto fit XChannelModel parameters to achieve best calibration
 %
 % [x,fval,Vfval] = AutoFit(FileName, OptVar, lb, ub)
@@ -46,17 +47,18 @@ xlim([lb, ub])
 
 %% Do the calibration
 % define function to optimise
-fun = @(x)GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,true,OptPlot.LineH);
+fun = @(x)GetModelError(x, OptVar, Inputs, Scenario.BankTestWL, true, ...
+                        OptPlot.LineH);
 
 % set optimisation options
 %options = optimoptions('fmincon');                % default options
 %options = optimoptions(options,'Display', 'iter');% diagnostic options
-%options = optimoptions(options,'MaxIter', 20);    % max number of iterations
+%options = optimoptions(options,'MaxIter', 20);    % max no of iterations
 %options = optimoptions(options,'TolX', 0.0001);   % parameter tolerance
 
 options = optimset('fminbnd');  
 options = optimset(options,'Display', 'iter');    % diagnostic options
-options = optimset(options,'MaxIter', 20);        % max number of iterations
+options = optimset(options,'MaxIter', 20);        % max no of iterations
 options = optimset(options,'TolX', (ub-lb)/1000); % parameter tolerance
 %options = optimset(options,'PlotFcns',@PlotFit);  % plotting
 
@@ -65,7 +67,8 @@ options = optimset(options,'TolX', (ub-lb)/1000); % parameter tolerance
 [x,~] = fminbnd(fun,lb,ub,options);
 
 %% Plot the final fit (and save plot + animation)
-[CalibError,ErrorSign] = GetModelError(x,OptVar,Inputs,Scenario.BankTestWL,false);
+[CalibError,ErrorSign] = GetModelError(x, OptVar, Inputs, ...
+                                       Scenario.BankTestWL, false);
 CalibError = CalibError * ErrorSign;
 
 %% tidy, save and close optimisation plot
@@ -80,13 +83,14 @@ if ~isnan(Scenario.Vradius)
     % model setup
     ValidationInputs = Inputs;
     ValidationInputs.Hyd.Radius = Scenario.Vradius;
-    %ValidationInputs.Outputs.CsvInt = 99999999; % only output final XS shape for validation run
     if ~isnan(Scenario.Vgeometry{1})
-        ValidationInputs.Hyd.InitialGeometry   = csvread(Scenario.Vgeometry{1});
+        ValidationInputs.Hyd.InitialGeometry = ...
+            csvread(Scenario.Vgeometry{1});
     else
         error('Geometry file %s not found',Scenario.Vgeometry{1})
     end
-    ValidationInputs.FileName = [Inputs.FileName(1:end-4),'_Validation.txt'];
+    ValidationInputs.FileName = [Inputs.FileName(1:end-4), ...
+                                 '_Validation.txt'];
     for ii = 1:length(OptVar)
         switch OptVar{ii}
             case 'Repose'
@@ -100,7 +104,8 @@ if ~isnan(Scenario.Vradius)
         end
     end
     % run model
-    [ValidError,ErrorSign] = GetModelError(x,OptVar,ValidationInputs,Scenario.VBankTestWL,false);
+    [ValidError,ErrorSign] = GetModelError(x, OptVar, ValidationInputs, ...
+                                           Scenario.VBankTestWL, false);
     ValidError = ValidError * ErrorSign;
 else
     ValidError = nan;
