@@ -19,7 +19,7 @@ function [qsiN_slope] = BedSlope(Slope, Edge, Frac)
 %         alluvial-bed slopes. Journal of Hydraulic Research, 33(4), 
 %         pp.495-517.
 %
-%   See also: XCHANNELMODEL, BEDLOAD
+%   See also: XCHANNEL, BEDLOAD
 
 switch Slope.Formula
     case 0

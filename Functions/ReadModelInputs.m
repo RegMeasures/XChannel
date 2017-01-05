@@ -1,5 +1,5 @@
 function [Inputs] = ReadModelInputs(FileName)
-%READMODELINPUTS   Read XChannelModel input file to structure array
+%READMODELINPUTS   Read XChannel model input file to structure array
 %
 %   [Inputs] = READMODELINPUTS() Prompts user to specify input file
 %   
@@ -84,7 +84,7 @@ function [Inputs] = ReadModelInputs(FileName)
 %         .VideoOut        - 0 = no video output, 1 = output video
 %         .CsvInt          - Geometry snapshot CSV file output interval [s]
 %
-%   See also: XCHANNELMODEL GETINPUTPARAMETER
+%   See also: XCHANNEL GETINPUTPARAMETER
 
 %% Get file name and path if not specified as input
 if ~exist('FileName','var')

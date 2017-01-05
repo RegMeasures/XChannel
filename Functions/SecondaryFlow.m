@@ -20,7 +20,7 @@ function [Tau_N] = SecondaryFlow(HydInputs, Cell)
 %                     .Rho_W   = water density [kg/m3]
 %      Cell      = Struct of cell center properties initialised by
 %                  InitialiseVariables and set in earlier steps of 
-%                  XChannelModel. Fields of Cell used by SECONDARYFLOW are:
+%                  XChannel. Fields of Cell used by SECONDARYFLOW are:
 %                     .NCells = number of cells across cross-section
 %                     .Wet    = mask indicating wet cells
 %                     .U      = depth averaged velocity in each cell [m/s]
@@ -35,7 +35,7 @@ function [Tau_N] = SecondaryFlow(HydInputs, Cell)
 %         nearly-horizontal flow. Journal of Hydraulic Research, 24(1), 
 %         pp.19–37.
 %
-%   See also: XCHANNELMODEL, READMODELINPUTS
+%   See also: XCHANNEL, READMODELINPUTS
 
 %% Initialise variables
 AlphaSpiral = NaN(Cell.NCells,1);

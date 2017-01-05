@@ -28,7 +28,7 @@ function [WL] = SetQ(CellWidth,BedLevel,WetLastTimestep,HydInputs)
 %   Outputs:
 %      WL              = Water level which provides the desired flow (m)
 %
-%   See also: XCHANNELMODEL, BISECTION
+%   See also: XCHANNEL, BISECTION
 
 %% Use bisection method (simple & robust) to find WL which gives desired Q
 WL = bisection(@Qerr, max(BedLevel), min(BedLevel),...

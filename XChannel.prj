@@ -1,6 +1,6 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="1561172944" file="C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel.prj" location="C:\Projects\Research\BankErosionMatlab\Trunk" name="XChannelModel" preferred-package-location="C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
-    <param.appname>XChannelModel</param.appname>
+  <configuration build-checksum="1561172944" file="C:\Projects\XChannel\XChannel.prj" location="C:\Projects\XChannel" name="XChannel" preferred-package-location="C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>XChannel</param.appname>
     <param.icon />
     <param.icons />
     <param.version>1.0</param.version>
@@ -8,17 +8,20 @@
     <param.email>richard.measures@niwa.co.nz</param.email>
     <param.company>NIWA</param.company>
     <param.summary>Single cross-section morphological model simulating cross-channel processes</param.summary>
-    <param.description />
+    <param.description>XChannel is a hydro-morphodynamic model of cross-channel evolution. The model simulates the evolution of river cross-section shape due to transverse bedload transport processes under the assumption of equilibrium longitudinal transport. Transverse sediment transport processes included in the model include:
+ - Transverse transport due to secondary currents (spiral flow) induced by a specified bend radius
+ - Transverse slope effects on bedload transport
+ - Bank erosion</param.description>
     <param.screenshot />
     <param.guid />
     <param.net.saved.interface />
-    <param.installpath.string>\NIWA\XChannelModel\</param.installpath.string>
+    <param.installpath.string>\NIWA\XChannel\</param.installpath.string>
     <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
     <param.logo />
     <param.install.notes />
-    <param.intermediate>${PROJECT_ROOT}\XChannelModel\for_testing</param.intermediate>
-    <param.files.only>${PROJECT_ROOT}\XChannelModel\for_redistribution_files_only</param.files.only>
-    <param.output>${PROJECT_ROOT}\XChannelModel\for_redistribution</param.output>
+    <param.intermediate>${PROJECT_ROOT}\XChannel\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\XChannel\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\XChannel\for_redistribution</param.output>
     <param.enable.clean.build>false</param.enable.clean.build>
     <param.user.defined.mcr.options />
     <param.embed.ctf>true</param.embed.ctf>
@@ -41,7 +44,6 @@
       <param.icon />
       <param.icons />
       <param.version />
-      <param.description />
       <param.screenshot />
       <param.guid />
       <param.net.saved.interface />
@@ -66,16 +68,16 @@
       <param.log.file />
     </unset>
     <fileset.main>
-      <file>${PROJECT_ROOT}\XChannelModel.m</file>
+      <file>${PROJECT_ROOT}\XChannel.m</file>
     </fileset.main>
     <fileset.resources>
       <file>${PROJECT_ROOT}\Functions\BankFlux.m</file>
       <file>${PROJECT_ROOT}\Functions\BankStencil.m</file>
+      <file>${PROJECT_ROOT}\Functions\BasicHydraulics.m</file>
       <file>${PROJECT_ROOT}\Functions\BedLoad.m</file>
       <file>${PROJECT_ROOT}\Functions\BedSlope.m</file>
       <file>${PROJECT_ROOT}\Functions\bisection.m</file>
-      <file>${PROJECT_ROOT}\Functions\CalcQ.m</file>
-      <file>${PROJECT_ROOT}\Functions\Centre2Edge.m</file>
+      <file>${PROJECT_ROOT}\Functions\Center2Edge.m</file>
       <file>${PROJECT_ROOT}\Functions\GetInputParameter.m</file>
       <file>${PROJECT_ROOT}\Functions\HidingFunction.m</file>
       <file>${PROJECT_ROOT}\Functions\IdentifyBanks.m</file>
@@ -83,16 +85,18 @@
       <file>${PROJECT_ROOT}\Functions\MeyerPeterMuller.m</file>
       <file>${PROJECT_ROOT}\Functions\PlotXS.m</file>
       <file>${PROJECT_ROOT}\Functions\ReadModelInputs.m</file>
+      <file>${PROJECT_ROOT}\Functions\SecondaryFlow.m</file>
       <file>${PROJECT_ROOT}\Functions\SetQ.m</file>
       <file>${PROJECT_ROOT}\Functions\StoreErosion.m</file>
+      <file>${PROJECT_ROOT}\Functions\TriggerBanks.m</file>
       <file>${PROJECT_ROOT}\Functions\UpdateXsPlot.m</file>
       <file>${PROJECT_ROOT}\Functions\WilcockCrowe.m</file>
     </fileset.resources>
     <fileset.package />
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\XChannelModel\for_testing" name="readme.txt" optional="true">C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_testing\readme.txt</file>
-      <file location="${PROJECT_ROOT}\XChannelModel\for_testing" name="XChannelModel.exe" optional="false">C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_testing\XChannelModel.exe</file>
-      <file location="${PROJECT_ROOT}\XChannelModel\for_testing" name="splash.png" optional="false">C:\Projects\Research\BankErosionMatlab\Trunk\XChannelModel\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\XChannel\for_testing" name="readme.txt" optional="true">C:\Projects\XChannel\XChannel\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\XChannel\for_testing" name="splash.png" optional="false">C:\Projects\XChannel\XChannel\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\XChannel\for_testing" name="XChannel.exe" optional="false">C:\Projects\XChannel\XChannel\for_testing\XChannel.exe</file>
     </build-deliverables>
     <workflow />
     <matlab>

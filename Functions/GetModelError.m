@@ -1,6 +1,6 @@
 function [AbsError, ErrorSign] = GetModelError(OptIn, OptVar, Inputs, ...
                                                BankTestWL, Quiet, LineH)
-%GETMODELERROR   Run XChannelModel with modified parameters & return error
+%GETMODELERROR   Run XChannel with modified parameters & return error
 %
 %   [AbsError, ErrorSign] = GetModelError(OptIn, OptVar, Inputs, ...
 %                                         BankTestWL ,Quiet, LineH)
@@ -14,7 +14,7 @@ function [AbsError, ErrorSign] = GetModelError(OptIn, OptVar, Inputs, ...
 %                  - ThetSD
 %                  - QsBeRatio
 %                  - BErodibility
-%      Inputs = XChannelModel inputs as read by ReadModelInputs (struct)
+%      Inputs = XChannel inputs as read by ReadModelInputs (struct)
 %      Quiet  = True = no outputs, False = outputs as specified by 
 %               Inputs.Outputs (boolean)
 %      LineH  = LineHandle for series of points to be updated with
@@ -27,7 +27,7 @@ function [AbsError, ErrorSign] = GetModelError(OptIn, OptVar, Inputs, ...
 %      ErrorSign = Direction of error: +ve = too much bank erosion
 %                                      -ve = not enough bank erosion
 %
-%   See also: XCHANNELMODEL, BANKPOSERROR, AUTOFIT, READMODELINPUTS.
+%   See also: XCHANNEL, BANKPOSERROR, AUTOFIT, READMODELINPUTS.
 
 %% Turn off plots and diagnostics for quicker simulation
 if Quiet
@@ -52,7 +52,7 @@ for ii = 1:length(OptVar)
 end
 
 %% Run the model and calculate the error
-[FinalXS, ~] = XChannelModel(Inputs);
+[FinalXS, ~] = XChannel(Inputs);
 %AbsError = rmse(Inputs.Hyd.InitialGeometry(:,3), FinalXS(:,2));
 [AbsError, ErrorSign] = BankPosError(FinalXS(:,1), ...
                                      Inputs.Hyd.InitialGeometry(:,3), ...

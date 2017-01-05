@@ -35,7 +35,7 @@ function [HidExp] = HidingFunction(Options, Cell, Frac)
 %         mixed-size sediment. Journal of Hydraulic Engineering, 129(2), 
 %         pp.120–128.
 %   
-%   See also: XCHANNELMODEL, BEDLOAD, READMODELINPUTS.
+%   See also: XCHANNEL, BEDLOAD, READMODELINPUTS.
 
 switch Options.HidExp
     case 0

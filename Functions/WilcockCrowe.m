@@ -37,7 +37,7 @@ function [qsiTot_flow,ThetaCrit_i] = WilcockCrowe(Inputs, Cell, Frac, ...
 %         mixed-size sediment. Journal of Hydraulic Engineering, 129(2), 
 %         pp.120–128.
 %
-%   See also: BEDLOAD, HIDINGFUNCTION, XCHANNELMODEL, MEYERPETERMULLER.
+%   See also: BEDLOAD, HIDINGFUNCTION, XCHANNEL, MEYERPETERMULLER.
 
 Fs = sum(Cell.Fi(:,Frac.SandFrac),2);
 Delta = (Inputs.Sed.Rho_S-Inputs.Hyd.Rho_W)/Inputs.Hyd.Rho_W;

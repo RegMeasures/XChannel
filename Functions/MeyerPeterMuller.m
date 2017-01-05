@@ -45,7 +45,7 @@ function [qsiTot_flow, ThetaCrit_i] = MeyerPeterMuller(Inputs, Cell, ...
 %         Relation of Meyer-Peter and Müller Using Their Own Database.
 %         Journal of Hydraulic Engineering, 132(11), pp.1159-1168.
 %
-%   See also: BEDLOAD, HIDINGFUNCTION, XCHANNELMODEL, WILCOCKCROWE.
+%   See also: BEDLOAD, HIDINGFUNCTION, XCHANNEL, WILCOCKCROWE.
 
 ThetaCrit_i = Inputs.ST.ThetaCrit * HidExp;
 

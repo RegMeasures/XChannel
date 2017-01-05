@@ -49,7 +49,7 @@ function [qsiTot_flow, ThetaCrit_i] = BedLoad(Inputs, Cell, Frac)
 %         mixed-size sediment. Journal of Hydraulic Engineering, 129(2), 
 %         pp.120–128.
 %
-%   See also: XCHANNELMODEL, HIDINGFUNCTION, MEYERPETERMULLER,
+%   See also: XCHANNEL, HIDINGFUNCTION, MEYERPETERMULLER,
 %   WILCOCKCROWE.
 
 %% Apply hiding fuction to calculate fractional critical shear stress

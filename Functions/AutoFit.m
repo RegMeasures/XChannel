@@ -1,11 +1,11 @@
 function [x,CalibError,ValidError] = AutoFit(Inputs, OptVar, x0, lb, ...
                                              ub, Scenario)
-% Auto fit XChannelModel parameters to achieve best calibration
+% Auto fit XChannel parameters to achieve best calibration
 %
 % [x,fval,Vfval] = AutoFit(FileName, OptVar, lb, ub)
 %
 % inputs:
-% Inputs   = Model inputs for XChannelModel.m
+% Inputs   = Model inputs for XChannel
 %            (a final cross-section geometry must be included to fit to)
 % OptVar   = list of parametrs to optimise (cell array of strings)
 %            (only a limited subset can be optimised: see GetModelError for

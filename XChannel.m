@@ -1,16 +1,16 @@
-function [FinalXS, WL] = XChannelModel(Inputs)
-%XCHANNELMODEL Single cross-section 1D (cross-channel) morphological model
+function [FinalXS, WL] = XChannel(Inputs)
+%XCHANNEL Single cross-section 1D (cross-channel) morphological model
 %Morphological model for simulating the evolution of cross-section shape
 %for a single cross section
 %
-%   [FinalXS, WL] = XChannelModel() Runs model prompting user to select 
+%   [FinalXS, WL] = XChannel() Runs model prompting user to select 
 %   input file
 %
-%   [FinalXS, WL] = XChannelModel(FileName) Runs model with inputs from
+%   [FinalXS, WL] = XChannel(FileName) Runs model with inputs from
 %   FileName, where FileName is a string giving the name and path to a text
 %   file in standard format
 %
-%   [FinalXS, WL] = XChannelModel(Inputs) Runs model with inputs contained 
+%   [FinalXS, WL] = XChannel(Inputs) Runs model with inputs contained 
 %   in struct created by ReadModelInputs
 %   
 %   Outputs:
@@ -169,18 +169,18 @@ while T < Inputs.Time.EndTime
                   (1-Inputs.ST.UpwindBedload) * (C2E_Weights==0);
     
     % Calculate cell edge parameters using pre-calculated weightings
-    Edge.H               = Centre2Edge(Cell.H, C2E_Weights, Edge.Active);
-    Edge.Tau_Tot         = Centre2Edge(Cell.Tau_Tot, C2E_Weights, ...
+    Edge.H               = Center2Edge(Cell.H, C2E_Weights, Edge.Active);
+    Edge.Tau_Tot         = Center2Edge(Cell.Tau_Tot, C2E_Weights, ...
                                        Edge.Active);    
-    Edge.ShieldsStress_i = Centre2Edge(Cell.ShieldsStress_i, ...
+    Edge.ShieldsStress_i = Center2Edge(Cell.ShieldsStress_i, ...
                                        C2E_Weights, Edge.Active);
-    Edge.qsiTot_flow     = Centre2Edge(Cell.qsiTot_flow, C2E_Weights, ...
+    Edge.qsiTot_flow     = Center2Edge(Cell.qsiTot_flow, C2E_Weights, ...
                                        Edge.Active);
-    Edge.qsiN_flow       = Centre2Edge(Cell.qsiN_flow, C2E_Weights, ...
+    Edge.qsiN_flow       = Center2Edge(Cell.qsiN_flow, C2E_Weights, ...
                                        Edge.Active);
-    Edge.ThetaCrit_i     = Centre2Edge(Cell.ThetaCrit_i, C2E_Weights, ...
+    Edge.ThetaCrit_i     = Center2Edge(Cell.ThetaCrit_i, C2E_Weights, ...
                                        Edge.Active);
-    Edge.Dg_m            = Centre2Edge(Cell.Dg_m, C2E_Weights, ...
+    Edge.Dg_m            = Center2Edge(Cell.Dg_m, C2E_Weights, ...
                                        Edge.Active);
     
     %% Calculate transverse sediment transport due to bed slope

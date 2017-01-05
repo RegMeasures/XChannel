@@ -1,6 +1,6 @@
 function [Delta_i_bank] = BankFlux(Options, Cell, Frac, dT, Bank)
 %BANKFLUX   Fractional volumetric sediment flux due to bank erosion   
-%BANKFLUX is called by XChannelModel to calculate fractional sediment
+%BANKFLUX is called by XChannel to calculate fractional sediment
 %flux between cells due to bank erosion. IndentifyBanks, BankStencil and 
 %TriggerBanks are used to identify active banks and the cells associated 
 %with their top and bottom prior to calling BANKFLUX.
@@ -12,7 +12,7 @@ function [Delta_i_bank] = BankFlux(Options, Cell, Frac, dT, Bank)
 %                   Inputs.Bank.Flux struct by ReadModelInputs
 %      Cell       = Struct of cell center properties initialised by
 %                   InitialiseVariables and set in earlier steps of 
-%                   XChannelModel
+%                   XChannel
 %      Frac       = Struct of sediment fraction properties created by
 %                   InitialiseVariables
 %      dT         = timestep in seconds
@@ -23,7 +23,7 @@ function [Delta_i_bank] = BankFlux(Options, Cell, Frac, dT, Bank)
 %                     rate [m3/m/s] into and out of each cell due to bank 
 %                     erosion.
 %
-%   See also: XCHANNELMODEL, IDENTIFYBANKS, BANKSTENCIL, TRIGGERBANKS,
+%   See also: XCHANNEL, IDENTIFYBANKS, BANKSTENCIL, TRIGGERBANKS,
 %   INITIALISEVARIABLES, READMODELINPUTS
 
 Delta_i_bank = zeros(Cell.NCells,Frac.NFracs);

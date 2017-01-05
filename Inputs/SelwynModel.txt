@@ -1,4 +1,4 @@
-%% Selwyn XChannelModel setup file
+%% Selwyn XChannel model setup file
 
 %% ============================== Hydraulics ==============================
 % Geometry

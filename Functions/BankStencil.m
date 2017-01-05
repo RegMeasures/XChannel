@@ -13,10 +13,10 @@ function [Bank] = BankStencil(Options, Cell, Edge)
 %                Inputs.Bank.Stencil struct by ReadModelInputs by
 %      Cell    = Struct of cell center properties initialised by
 %                InitialiseVariables and set in earlier steps of 
-%                XChannelModel
+%                XChannel
 %      Edge    = Struct of cell edge properties initialised by
 %                InitialiseVariables and set in earlier steps of 
-%                XChannelModel
+%                XChannel
 %   Outputs:
 %      Bank = Struct containing details of bank locations and top/bottom:
 %         Bank.NBanks = Number of active banks currently in model
@@ -25,7 +25,7 @@ function [Bank] = BankStencil(Options, Cell, Edge)
 %         Bank.Bottom = vector (size [NBanks,1]) listing cellNo for the 
 %                       bottom of each bank
 %
-%   See also: XCHANNELMODEL, IDENTIFYBANKS, BANKFLUX, TRIGGERBANKS,
+%   See also: XCHANNEL, IDENTIFYBANKS, BANKFLUX, TRIGGERBANKS,
 %   INITIALISEVARIABLES, READMODELINPUTS
 
 % Possible future addition: Should we add some code to check for and
