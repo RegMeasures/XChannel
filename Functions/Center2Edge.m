@@ -23,7 +23,7 @@ function [EdgeVals] = Center2Edge(CenterVals, C2E_Weights, ActiveEdgeFlag)
 %      EdgeVals       = NCells+1 x NParameters matrix of cell edge
 %                       parameter values.
 %   
-%   See also: XCHANNEL
+%   See also: XCHANNEL.
 
 NParameters = size(CenterVals,2);
 C2E_Weights = C2E_Weights*ones(1, NParameters);

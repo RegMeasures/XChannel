@@ -1,30 +1,38 @@
 function [x,CalibError,ValidError] = AutoFit(Inputs, OptVar, x0, lb, ...
                                              ub, Scenario)
-% Auto fit XChannel parameters to achieve best calibration
+%AUTOFIT   Optimise specified XChannel parameters for best calibration fit
 %
-% [x,fval,Vfval] = AutoFit(FileName, OptVar, lb, ub)
+%AUTOFIT Calibrates the specified model parameter to minimise difference
+%between modelled and observed outer bank position. It save outputs from 
+%the final (calibrated) simulation. Optionally it runs and saves outputs 
+%from a seperate validation run using the same parameterisation but a 
+%different cross-section.
 %
-% inputs:
-% Inputs   = Model inputs for XChannel
-%            (a final cross-section geometry must be included to fit to)
-% OptVar   = list of parametrs to optimise (cell array of strings)
-%            (only a limited subset can be optimised: see GetModelError for
-%            list of parameters for which optimisation has been enabled)
-% x0       = initial estimate of calibration parameters to start iterating
-%            from (no longer used)
-% lb       = vector of lower bounds corresponding to each named parameter
-%            in OptVar
-% ub       = vector of upper bounds corresponding to each named parameter
-%            in OptVar
-% Vradius  = radius for validation run with calibrated parameter (optional)
-% Vgeometry= geometry file for validation run (optional - required if
-%            Vradius specified
+%   [x,fval,Vfval] = AutoFit(FileName, OptVar, lb, ub)
 %
-% outputs:
-% x        = vector of optimised parameter values corresponding to each
-%            named parameter in OptVar
-% fval     = Error of final fit
-% Vfval    = Error of validation run fit
+%   Inputs:
+%      Inputs   = Model inputs for XChannel (observed final cross-section
+%                 geometry must be included to calibrate to)
+%      OptVar   = list of parametrs to optimise (cell array of strings)
+%                 (only a limited subset can be optimised: see
+%                 GetModelError for list of parameters for which
+%                 optimisation has been enabled)
+%      x0       = initial estimate of calibration parameters to start
+%                 iterating from (no longer used)
+%      lb       = vector of lower bounds corresponding to each named
+%                 parameter in OptVar
+%      ub       = vector of upper bounds corresponding to each named
+%                 parameter in OptVar
+%      Vradius  = radius for validation run (optional)
+%      Vgeometry= geometry file for validation run (optional)
+%
+%   Outputs:
+%      x        = vector of optimised parameter values corresponding to
+%                 each named parameter in OptVar
+%      fval     = Error of final fit
+%      Vfval    = Error of validation run fit
+%
+%   See also: XCHANNELMODEL, GETMODELERROR.
 
 addpath('Functions')
 

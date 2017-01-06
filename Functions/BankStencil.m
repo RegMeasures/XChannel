@@ -9,14 +9,12 @@ function [Bank] = BankStencil(Options, Cell, Edge)
 %   [Bank] = BANKSTENCIL(Options, Cell, Edge)
 %
 %   Inputs:
-%      Options = Bank flux calculation options as read in to 
-%                Inputs.Bank.Stencil struct by ReadModelInputs by
+%      Options = Bank flux calculation options as read in to Inputs.Bank.ID
+%                struct by ReadModelInputs
 %      Cell    = Struct of cell center properties initialised by
-%                InitialiseVariables and set in earlier steps of 
-%                XChannel
+%                InitialiseVariables and set in earlier steps of XChannel
 %      Edge    = Struct of cell edge properties initialised by
-%                InitialiseVariables and set in earlier steps of 
-%                XChannel
+%                InitialiseVariables and set in earlier steps of XChannel
 %   Outputs:
 %      Bank = Struct containing details of bank locations and top/bottom:
 %         Bank.NBanks = Number of active banks currently in model
@@ -26,7 +24,7 @@ function [Bank] = BankStencil(Options, Cell, Edge)
 %                       bottom of each bank
 %
 %   See also: XCHANNEL, IDENTIFYBANKS, BANKFLUX, TRIGGERBANKS,
-%   INITIALISEVARIABLES, READMODELINPUTS
+%   INITIALISEVARIABLES, READMODELINPUTS.
 
 % Possible future addition: Should we add some code to check for and
 % remove duplicate banks?

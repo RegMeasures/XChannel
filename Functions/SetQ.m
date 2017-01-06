@@ -2,7 +2,9 @@ function [WL] = SetQ(CellWidth,BedLevel,WetLastTimestep,HydInputs)
 %SETQ   Find water level (normal depth) which generates the specified flow
 %Optimises WL in a cross-section so that total flow through the
 %cross-section equals desired flow through the cross-section (for the
-%specified geometry, roughness, slope and other options).
+%specified geometry, roughness, slope and other options). A simple
+%bisection algorithm is used to identify the WL which returns the desired
+%flow.
 %
 %   [WL] = SETQ(CellWidth,BedLevel,WetLastTimestep,HydInputs)
 %
@@ -28,10 +30,10 @@ function [WL] = SetQ(CellWidth,BedLevel,WetLastTimestep,HydInputs)
 %   Outputs:
 %      WL              = Water level which provides the desired flow (m)
 %
-%   See also: XCHANNEL, BISECTION
+%   See also: XCHANNEL, BISECTION.
 
 %% Use bisection method (simple & robust) to find WL which gives desired Q
-WL = bisection(@Qerr, max(BedLevel), min(BedLevel),...
+WL = bisection(@Qerr, min(BedLevel), max(BedLevel),...
                HydInputs.QTol, HydInputs.ItMax);
     function y = Qerr(x)
         y = CalcQ(CellWidth,BedLevel,WetLastTimestep,HydInputs,x)...

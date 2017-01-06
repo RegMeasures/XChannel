@@ -84,7 +84,7 @@ function [Inputs] = ReadModelInputs(FileName)
 %         .VideoOut        - 0 = no video output, 1 = output video
 %         .CsvInt          - Geometry snapshot CSV file output interval [s]
 %
-%   See also: XCHANNEL GETINPUTPARAMETER
+%   See also: XCHANNEL GETINPUTPARAMETER.
 
 %% Get file name and path if not specified as input
 if ~exist('FileName','var')

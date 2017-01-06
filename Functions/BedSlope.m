@@ -1,7 +1,7 @@
 function [qsiN_slope] = BedSlope(Slope, Edge, Frac)
 %BEDSLOPE   Transverse transport rate due to bed slope effect
-% BEDSLOPE calculates the fractional volumetric transverse transport rate
-% due to transverse bed slope effects on fluvial transport.
+%BEDSLOPE calculates the fractional volumetric transverse transport rate
+%due to transverse bed slope effects on fluvial transport.
 %
 %   [qsiN_slope] = BEDSLOPE(Slope, Edge, Frac)
 %
@@ -19,7 +19,7 @@ function [qsiN_slope] = BedSlope(Slope, Edge, Frac)
 %         alluvial-bed slopes. Journal of Hydraulic Research, 33(4), 
 %         pp.495-517.
 %
-%   See also: XCHANNEL, BEDLOAD
+%   See also: XCHANNEL, BEDLOAD.
 
 switch Slope.Formula
     case 0

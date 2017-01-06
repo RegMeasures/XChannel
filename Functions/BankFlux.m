@@ -9,7 +9,25 @@ function [Delta_i_bank] = BankFlux(Options, Cell, Frac, dT, Bank)
 %   
 %   Inputs:
 %      Options    = Bank flux calculation options as read in to 
-%                   Inputs.Bank.Flux struct by ReadModelInputs
+%                   Inputs.Bank.Flux struct by ReadModelInputs. Fields are:
+%         .Approach  = Bank erosion flux calculation approach:
+%                      Approach = 0 -> no bank erosion flux
+%                      Approach = 1 -> excess slope bank erosion flux
+%                      Approach = 2 -> flux proportional to toe erosion
+%                      Approach = 3 -> flux proportional to toe transport
+%                      Approach = 4 -> flux proportional to product of
+%                                      toe transport and bank slope
+%         .Repose    = Limiting slope (for Approach = 1)
+%         .SlipRatio = Proportion of excess slope moved in each timestep
+%                      (for Approach = 1)
+%         .ThetSD    = Proportion of toe erosion transfered to bank top
+%                      (for Approach = 2)
+%         .QsBeRatio = Coefficient linking bank erosion flux to toe
+%                      transport rate (for Approach = 3)
+%         .BErodibility = Coefficient linking bank erosion flux to product 
+%                      of toe transport rate and  slope (for Approach = 4)
+%         .StencilMix = Option to mix sed through cells between top & toe
+%                      (affecting active layer composition) [1/0] 
 %      Cell       = Struct of cell center properties initialised by
 %                   InitialiseVariables and set in earlier steps of 
 %                   XChannel
@@ -24,7 +42,7 @@ function [Delta_i_bank] = BankFlux(Options, Cell, Frac, dT, Bank)
 %                     erosion.
 %
 %   See also: XCHANNEL, IDENTIFYBANKS, BANKSTENCIL, TRIGGERBANKS,
-%   INITIALISEVARIABLES, READMODELINPUTS
+%   STOREEROSION, INITIALISEVARIABLES, READMODELINPUTS.
 
 Delta_i_bank = zeros(Cell.NCells,Frac.NFracs);
 

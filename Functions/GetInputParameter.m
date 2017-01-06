@@ -38,7 +38,7 @@ function [ParValue,ParType] = GetInputParameter(C, ParName, Default, ...
 %         a existing file are read in as strings: 
 %         ParValue = string; ParType = 3;
 %
-%   See also: READMODELINPUTS TEXTSCAN CSVREAD
+%   See also: READMODELINPUTS, TEXTSCAN, CSVREAD.
 
 RawPar = cell2mat(C{1,2}(strcmpi(C{1,1}, ParName)));
 

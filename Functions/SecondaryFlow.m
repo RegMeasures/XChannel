@@ -35,7 +35,7 @@ function [Tau_N] = SecondaryFlow(HydInputs, Cell)
 %         nearly-horizontal flow. Journal of Hydraulic Research, 24(1), 
 %         pp.19–37.
 %
-%   See also: XCHANNEL, READMODELINPUTS
+%   See also: XCHANNEL, READMODELINPUTS.
 
 %% Initialise variables
 AlphaSpiral = NaN(Cell.NCells,1);

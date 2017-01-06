@@ -1,18 +1,47 @@
-function [X] = bisection(f, Xhigh, Xlow, tol, ItMax)
-%BISECTION   Solve f(X) = 0 using bisection
+function [X] = bisection(Fun, Xlow, Xhigh, tol, ItMax)
+%BISECTION   Solve FUN(X) = 0 using bisection
 %
-%   [X] = bisection(f, Xhigh, Xlow, tol, ItMax) Solves f(X) = 0 using the
-%   bisection method. The search is computed using the initial range
-%   Xlow < X < Xhigh and is completed when abs(f(X)) < tol. If f(Xlow)and 
-%   f(Xhigh) have the same sign then the initial boundaries are 
+%   [X] = bisection(FUN, XLOW, XHIGH, TOL, ITMAX) Solves FUN(X) = 0 using
+%   bisection. The search is computed using the initial range
+%   XLOW < X < XHIGH and is completed when abs(FUN(X)) < TOL. If FUN(XLOW) 
+%   and FUN(XHIGH) have the same sign then the initial boundaries are 
 %   iteratively moved, maintaining the same range, to try and find
-%   boundaries which span f(X) = 0.
+%   boundaries which span FUN(X) = 0. 
+%
+%   ITMAX is an optional input with default 100.
 %
 %   BISECTION returns a warning if the maximum number of iterations is
-%   reaches and a satisfactory solution of X has not been found.
+%   reached and a satisfactory solution of X has not been found.
+%
+%   Examples
+%     FUN can be specified using @:
+%       x = bisection(@myfun, 0, 10, 0.001)
+%
+%     where myfun is a MATLAB function such as:
+%       function F = myfun(x)
+%           F = x^2 - 4;
+%       end
+%
+%     FUN can also be an anonymous function:
+%       x = bisection(@(x) x^2 - 4, 0, 10, 0.001)
+%
+%     If FUN is parameterized, you can use anonymous functions to capture 
+%     the problem-dependent parameters:
+%       function F = myfun(x,c)
+%           F = 2*x^2 - x - c;
+%       end
+%
+%       x = bisection(@(x) myfun(x,15), 0, 10, 0.001)
+%   
+%   See also: FSOLVE.
+
+% set default ItMax if required
+if ~exist('ItMax', 'var')
+    ItMax = 100;
+end
 
 % flip bounds if required
-if f(Xhigh) < f(Xlow)
+if Fun(Xhigh) < Fun(Xlow)
     tempHigh = Xhigh;
     Xhigh = Xlow;
     Xlow = tempHigh;
@@ -22,12 +51,12 @@ Iteration = 0;
 
 % check range
 Range = Xhigh - Xlow;
-while f(Xhigh) < 0  && Iteration < ItMax;
+while Fun(Xhigh) < 0  && Iteration < ItMax;
     Xhigh = Xhigh + Range;
     Xlow = Xlow + Range;
     Iteration = Iteration + 1;
 end
-while f(Xlow)>0  && Iteration < ItMax;
+while Fun(Xlow)>0  && Iteration < ItMax;
     Xlow = Xlow - Range;
     Xhigh = Xhigh - Range;
     Iteration = Iteration + 1;
@@ -35,7 +64,7 @@ end
 
 % find solution
 X = (Xhigh+Xlow)/2;
-err = f(X);
+err = Fun(X);
 while abs(err) > tol && Iteration < ItMax;
     Iteration = Iteration + 1;
     if err > 0
@@ -44,7 +73,7 @@ while abs(err) > tol && Iteration < ItMax;
         Xlow = X;
     end
     X = (Xhigh + Xlow) / 2;
-    err = f(X);
+    err = Fun(X);
 end
 
 % check solution

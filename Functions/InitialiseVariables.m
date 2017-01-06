@@ -1,11 +1,63 @@
 function [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs)
-% Create variable structures ready for model to run
-% Populate/calculate variables where possible/necessary before model
-% starts
-
-% note: Not all variables are created - only ones which are needed prior to
-% there definition elsewhere - e.g. variables used for plot generation or
-% calculation
+%INITIALISEVARIABLES   Create variables ready for XChannel loops to run
+%Create/populate structs and fields where necessary before XChannel model
+%starts iterating. Not all variables are created - only ones which are
+%needed prior to their definition elsewhere - e.g. variables used for plot 
+%generation or calculation inputs.
+%
+%   [Cell, Edge, Frac, Bank] = INITIALISEVARIABLES(Inputs)
+%
+%   Inputs:
+%      Inputs = Structure array created by ReadModelInputs
+%
+%   Outputs:
+%      Cell = Structure array to hold variables of cell center properties.
+%             The initial fields created to by INITIALISEVARIABLES are:
+%         .NCells   = number of cells across cross-section
+%         .N        = cell center location, cross-channel dir (NCells x 1)
+%         .Width    = cell width (NCells x 1)
+%         .Z        = cell bed elevation (NCells x 1)
+%         .Zinitial = cell initial bed elevation (NCells x 1)
+%         .Zfinal   = observed final bed elevation if supplied (NCells x 1)
+%         .EroStore = Stored bank erosion (only if StoredBE = 1) (NCellsx1)
+%         .Wet      = boolean flag for wet cells (NCells x 1)
+%         .U        = depth averaged streamwise velocity in cell (NCellsx1)
+%         .Tau_S    = streamwise bed shear stress in cell (NCells x 1)
+%         .Fi       = proportion of each sediment fraction in acive layer
+%                     of cell (NCells x NFracs)
+%         .BulkFi   = proportion of each sediment fraction in subsurface
+%                     of cell (NCells x NFracs)
+%         .SubDg_m  = geometric mean grain size of subsurface [m](NCellsx1) 
+%         .Dg_phi   = geometric mean grain size of active layer [phi]
+%                     (NCells x 1) 
+%         .Dg_m     = geometric mean grain size of active layer [m]
+%                     (NCells x 1) 
+%         .qsS_flow_kg = Streamwise bedload transport rate [kg/s/m] 
+%                     (NCells x 1) 
+%         .Delta_tot = Rate of deposition in each cell [m3/m/s](NCells x 1) 
+%         .Delta_i_tot = Fractional rate of deposition in each cell
+%                     [m3/m/s] (NCells x NFracs) 
+%      Edge = Structure array to hold variables of cell edge properties
+%         .NEdges   = number of edges across cross-section = NCells + 1
+%         .N        = cell edge location, cross-channel dir (NEdges x 1)
+%         .IsBank   = flag for whether edge is a bank (NEdges x 1)
+%      Frac = Structure array of sediment fraction properties
+%         .NFracs   = number of sediment fractions
+%         .Di_m     = size of sediment fraction [m] (1 x NFracs)
+%         .Di_phi   = size of sediment fraction [phi] (1 x NFracs)
+%         .SandFrac = flag for fractions which are 'sand' for purposes of
+%                     Wilcock-Crowe bedload transport (1 x NFracs)
+%      Bank = Structure array of bank properties
+%         .NBanks   = number of identified banks
+%         .Top      = bank top cell number (NBanks x 1)
+%         .Bottom   = bank bottom cell number (NBanks x 1)
+%
+%   Notes: 
+%      Several fields are initialised with zero or dummy values.
+%      Additional fields not initialised here are added to Cell, Edge, and
+%      Bank structure arrays by other parts of XChannel.
+%
+%   See also: XCHANNEL, READMODELINPUTS.
 
 %% Initialise geometry
 Cell.NCells = size(Inputs.Hyd.InitialGeometry,1);

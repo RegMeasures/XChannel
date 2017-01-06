@@ -1,7 +1,11 @@
 function UpdateXsPlot(XsFigure, Cell, Edge, Bank, WL, T, Flow, PlotSed)
-% Update bed level and water level on cross-section plot
-% PlotSed = optional flag to plot sediment size (default = true)
-% See also PlotXS
+%UPDATEXSPLOT   Update cross-section plot created by PlotXS
+%
+%   UPDATEXSPLOT(XsFigure, Cell, Edge, Bank, WL, T, Flow, PlotSed) 
+%   All inputs are the same as for PlotXS except for XsFigure which is an
+%   input to UPDATEPLOTXS rather than an output (as it is in PlotXS).
+%
+%   See also: PLOTXS, XCHANNEL.
 
 if ~exist('PlotSed','var')
     PlotSed = true;
@@ -58,8 +62,10 @@ if PlotSed
 end
 
 % Update title
-set(XsFigure.XsPlotTitleH, 'String', sprintf('Model time = %.0f s, Flow = %.1f, WL = %.2f',T , Flow, WL))   
+set(XsFigure.XsPlotTitleH, 'String', ...
+    sprintf('Model time = %.0f s, Flow = %.1f, WL = %.2f', T, Flow, WL))   
 
+% Ensure figure graphics have updated properly 
 drawnow
 
 end

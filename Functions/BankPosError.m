@@ -25,7 +25,7 @@ function [AbsBankError, ErrorSign] = BankPosError(Dist, ObsBed, ...
 %      ErrorSign = Direction of error: +ve = too much bank erosion
 %                                      -ve = not enough bank erosion
 %
-%   See also: GETMODELERROR
+%   See also: GETMODELERROR, XCHANNEL.
 
 % Validate inputs
 assert(isvector(Dist))
