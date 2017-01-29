@@ -46,11 +46,11 @@ STFormula = 1                % Sediment transport formula:
 ThetaCrit   = 0.047          % Critical shields stress for transport (for STFormula = 1). Possible values:
                              %   0.047  = original MPM '48 and also Wong and Parker 2006 eq. 22 (default)
                              %   0.0495 = correction suggested in Wong and Parker 2006 eq. 24
-MPMcoef   = 4.93             % Coefficient in MPM formula possible values are:
+MPMcoef   = 8.0              % Coefficient in MPM formula possible values are:
                              %   8    = original coefficient in Meyer-Peter and Muller 1948
                              %   4.93 = correction suggested in Wong and Parker 2006 eq. 22 (default)
                              %   3.97 = correction suggested in Wong and Parker 2006 eq. 24
-MPMexponent = 1.6            % Coefficient in MPM formula possible values are:
+MPMexponent = 1.5            % Coefficient in MPM formula possible values are:
                              %   1.5 = original MPM '48 and also Wong and Parker 2006 eq. 24
                              %   1.6 = correction suggested in Wong and Parker 2006 eq. 22 (default)
 
