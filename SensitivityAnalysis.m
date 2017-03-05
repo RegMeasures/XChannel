@@ -13,7 +13,7 @@ FileName = 'Inputs\SelwynModel.txt';
 
 %% Load sensitivity scenarios table
 % Read excel file
-[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:R49');
+[~, ~, raw] = xlsread('Inputs\Scenarios.xlsx','Scenarios','A3:S50');
 % Allocate imported array to column variable names
 clear Scenarios
 Scenarios.ID        = raw(:,1);
@@ -25,15 +25,16 @@ Scenarios.BTrigger  = cell2mat(raw(:,6));
 Scenarios.BankFlux  = cell2mat(raw(:,7));
 Scenarios.StoredBE  = cell2mat(raw(:,8));
 Scenarios.UpwindBedload  = cell2mat(raw(:,9));
-Scenarios.Geometry  = raw(:,10);
-Scenarios.BankTestWL = cell2mat(raw(:,11));
-Scenarios.lb        = cell2mat(raw(:,12));
-Scenarios.ub        = cell2mat(raw(:,13));
-Scenarios.dT        = cell2mat(raw(:,14));
-Scenarios.Vgeometry = raw(:,15);
-Scenarios.Vradius   = cell2mat(raw(:,16));
-Scenarios.VBankTestWL = cell2mat(raw(:,17));
-Scenarios.Comments  = raw(:,18);
+Scenarios.SlipRatio = cell2mat(raw(:,10));
+Scenarios.Geometry  = raw(:,11);
+Scenarios.BankTestWL = cell2mat(raw(:,12));
+Scenarios.lb        = cell2mat(raw(:,13));
+Scenarios.ub        = cell2mat(raw(:,14));
+Scenarios.dT        = cell2mat(raw(:,15));
+Scenarios.Vgeometry = raw(:,16);
+Scenarios.Vradius   = cell2mat(raw(:,17));
+Scenarios.VBankTestWL = cell2mat(raw(:,18));
+Scenarios.Comments  = raw(:,19);
 
 Scenarios = struct2table(Scenarios);
 Scenarios.ID = strtrim(Scenarios.ID);
@@ -74,6 +75,7 @@ for ScenNo = 1:size(Scenarios,1)
         Inputs.Bank.Flux.Approach    = Scenarios.BankFlux(ScenNo);
         Inputs.Bank.Update.StoredBE  = Scenarios.StoredBE(ScenNo);
         Inputs.ST.UpwindBedload      = Scenarios.UpwindBedload(ScenNo);
+        Inputs.Bank.Flux.SlipRatio   = Scenarios.SlipRatio(ScenNo);
         if exist(Scenarios.Geometry{ScenNo}, 'file')
             Inputs.Hyd.InitialGeometry   = csvread(Scenarios.Geometry{ScenNo});
         else
