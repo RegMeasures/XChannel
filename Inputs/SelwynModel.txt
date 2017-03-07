@@ -115,7 +115,7 @@ BankFlux  = 3                % Bank erosion flux calculation approach (default =
                              %   3 = Flux rate is proportional to bank toe transport rate (needs: QsBeRatio)
                              %   4 = Flux rate is proportional to bank toe transport rate * slope (needs: BErodibility)
 Repose    = 0.5              % Limiting slope [m/m] (for BankFlux 1)
-SlipRatio = 0.25             % Proportion of excess material slipped per timestep [0-1] (default = 1, for BankFlux 1)
+SlipRatio = 1.0              % Proportion of excess material slipped per timestep [0-1] (default = 1, for BankFlux 1)
 ThetSD    = 0.2              % Bank erosion flux as a proportion of bank toe erosion rate (default = 0.5, for BankFlux 2)
 QsBeRatio = 0.05             % Bank erosion flux as a proportion of bank toe transport rate (for BankFlux 3)
 BErodibility = 0.001         % Bank erosion flux as a proportion of bank toe transport rate * slope (for BankFlux 4)
