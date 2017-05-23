@@ -25,6 +25,7 @@ function [Inputs] = ReadModelInputs(FileName)
 %         .Kappa           - Von Karman constant
 %         .Rho_W           - Water density [kg/m3]
 %         .g               - Acceleration due to gravity [m/s2]
+%         .ConstBend       - Option to use constant bend radius [1/0]
 %      .Sed                - Sediment inputs (struct)
 %         .SedSize         - Sediment size (single value or array) [m]
 %         .SedType         - 1 = single size, 2 = multiple fractions
@@ -112,7 +113,7 @@ fclose(fid);
 if Type ~= 2
     error('Geometry file %s not found',Inputs.Hyd.InitialGeometry)
 end
-Inputs.Hyd.Slope = GetInputParameter(C,'Slope');
+Inputs.Hyd.Slope  = GetInputParameter(C,'Slope');
 Inputs.Hyd.Radius = GetInputParameter(C,'Radius');
 
 % Flow
@@ -141,13 +142,18 @@ switch Inputs.Hyd.Roughness
 end
 
 % Advanced (optional) parameters
-Inputs.Hyd.ESpiral = GetInputParameter(C,'ESpir',1);
-Inputs.Hyd.DryFlc = GetInputParameter(C,'DryFlc',0);
-Inputs.Hyd.QTol = GetInputParameter(C,'QTol',0.001);
-Inputs.Hyd.ItMax = GetInputParameter(C,'ItMax',20);
-Inputs.Hyd.Kappa = GetInputParameter(C,'Kappa',0.4);
-Inputs.Hyd.Rho_W = GetInputParameter(C,'RhoW',1000);
-Inputs.Hyd.g = GetInputParameter(C,'Gravity',9.81);
+Inputs.Hyd.ESpiral   = GetInputParameter(C,'ESpir',1);
+Inputs.Hyd.DryFlc    = GetInputParameter(C,'DryFlc',0);
+Inputs.Hyd.QTol      = GetInputParameter(C,'QTol',0.001);
+Inputs.Hyd.ItMax     = GetInputParameter(C,'ItMax',20);
+Inputs.Hyd.Kappa     = GetInputParameter(C,'Kappa',0.4);
+Inputs.Hyd.Rho_W     = GetInputParameter(C,'RhoW',1000);
+Inputs.Hyd.g         = GetInputParameter(C,'Gravity',9.81);
+Inputs.Hyd.ConstBend = GetInputParameter(C,'ConstBend',1);
+
+if Inputs.Hyd.ConstBend ~= 0 && Inputs.Hyd.ConstBend ~= 1
+    error('ConstBend must equal 0 or 1')
+end
 
 %% Read in sediment parameters
 [Inputs.Sed.SedSize, Inputs.Sed.SedType] = ...
@@ -156,20 +162,20 @@ if Inputs.Sed.SedType == 3;
     error('Sediment file %s not found',Inputs.Sed.SedSize)
 end
 
-Inputs.Sed.Rho_S = GetInputParameter(C,'RhoS',2650);
+Inputs.Sed.Rho_S    = GetInputParameter(C,'RhoS',2650);
 Inputs.Sed.Porosity = GetInputParameter(C,'Porosity',0.4);
-Inputs.Sed.DA = GetInputParameter(C,'DA');
-Inputs.Sed.SedThr = GetInputParameter(C,'SedThr',Inputs.Hyd.DryFlc*2);
+Inputs.Sed.DA       = GetInputParameter(C,'DA');
+Inputs.Sed.SedThr   = GetInputParameter(C,'SedThr',Inputs.Hyd.DryFlc*2);
 if Inputs.Sed.SedThr<Inputs.Hyd.DryFlc
     error('SedThr must be >= DryFlc')
 end
 
 %% Bedload transport due to flow
 Inputs.ST.UpwindBedload = GetInputParameter(C,'UpwindBedload',1);
-Inputs.ST.Formula = GetInputParameter(C,'STFormula',1);
-Inputs.ST.ThetaCrit = GetInputParameter(C,'ThetaCrit',0.047);
-Inputs.ST.MPMcoef = GetInputParameter(C,'MPMcoef',4.93);
-Inputs.ST.MPMexponent = GetInputParameter(C,'MPMexponent',1.6);
+Inputs.ST.Formula       = GetInputParameter(C,'STFormula',1);
+Inputs.ST.ThetaCrit     = GetInputParameter(C,'ThetaCrit',0.047);
+Inputs.ST.MPMcoef       = GetInputParameter(C,'MPMcoef',4.93);
+Inputs.ST.MPMexponent   = GetInputParameter(C,'MPMexponent',1.6);
 switch Inputs.ST.Formula
     case 0
         fprintf('No streamwise bedload transport\n')
@@ -198,13 +204,13 @@ switch Inputs.ST.HidExp
 end
 
 %% Bedslope effects on transport
-Inputs.Slope.Formula = GetInputParameter(C,'BedSlope',0);
+Inputs.Slope.Formula  = GetInputParameter(C,'BedSlope',0);
 Inputs.Slope.BetaStar = GetInputParameter(C,'BetaStar');
-Inputs.Slope.m = GetInputParameter(C,'m');
-Inputs.Slope.A_sh = GetInputParameter(C,'Ash',9);
-Inputs.Slope.B_sh = GetInputParameter(C,'Bsh',0.5);
-Inputs.Slope.C_sh = GetInputParameter(C,'Csh',0.3);
-Inputs.Slope.D_sh = GetInputParameter(C,'Dsh',0.7);
+Inputs.Slope.m        = GetInputParameter(C,'m');
+Inputs.Slope.A_sh     = GetInputParameter(C,'Ash',9);
+Inputs.Slope.B_sh     = GetInputParameter(C,'Bsh',0.5);
+Inputs.Slope.C_sh     = GetInputParameter(C,'Csh',0.3);
+Inputs.Slope.D_sh     = GetInputParameter(C,'Dsh',0.7);
 switch Inputs.Slope.Formula
     case 0
         fprintf('No bed slope formulation being used\n')
@@ -224,8 +230,8 @@ end
 %% Bank erosion
 % Bank identification
 Inputs.Bank.ID.Approach = GetInputParameter(C,'BankID',0);
-Inputs.Bank.ID.BHeight = GetInputParameter(C,'BHeight');
-Inputs.Bank.ID.BSlope = GetInputParameter(C,'BSlope');
+Inputs.Bank.ID.BHeight  = GetInputParameter(C,'BHeight');
+Inputs.Bank.ID.BSlope   = GetInputParameter(C,'BSlope');
 switch Inputs.Bank.ID.Approach
     case 0 % no additional inputs required
         fprintf(['No bank ID approach being used ', ...
@@ -246,7 +252,7 @@ switch Inputs.Bank.ID.Approach
 end
 
 % Bank stencil
-Inputs.Bank.Stencil.Top = GetInputParameter(C,'BankTop',0);
+Inputs.Bank.Stencil.Top        = GetInputParameter(C,'BankTop',0);
 Inputs.Bank.Stencil.TopCellLim = GetInputParameter(C,'TopCellLim',1);
 Inputs.Bank.Stencil.TopDistLim = GetInputParameter(C,'TopDistLim',9999);
 switch Inputs.Bank.Stencil.Top
@@ -254,7 +260,7 @@ switch Inputs.Bank.Stencil.Top
         fprintf('No bank top stencil being used - adjacent cells\n')
 end
 
-Inputs.Bank.Stencil.Bottom = GetInputParameter(C,'BankBot',0);
+Inputs.Bank.Stencil.Bottom     = GetInputParameter(C,'BankBot',0);
 Inputs.Bank.Stencil.BotCellLim = GetInputParameter(C,'BotCellLim',1);
 Inputs.Bank.Stencil.BotDistLim = GetInputParameter(C,'BotDistLim',9999);
 switch Inputs.Bank.Stencil.Bottom
@@ -269,7 +275,7 @@ end
 % Bank trigger
 Inputs.Bank.Trigger.BTrigger = GetInputParameter(C,'BTrigger',0);
 Inputs.Bank.Trigger.BTHeight = GetInputParameter(C,'BTHeight');
-Inputs.Bank.Trigger.BTSlope = GetInputParameter(C,'BTSlope');
+Inputs.Bank.Trigger.BTSlope  = GetInputParameter(C,'BTSlope');
 switch Inputs.Bank.Trigger.BTrigger
     case 0
         fprintf('No bank trigger approach (i.e. every bank is active)\n')
@@ -286,11 +292,11 @@ switch Inputs.Bank.Trigger.BTrigger
 end
 
 % Bank flux calculation
-Inputs.Bank.Flux.Approach = GetInputParameter(C,'BankFlux',0);
-Inputs.Bank.Flux.Repose = GetInputParameter(C,'Repose');
-Inputs.Bank.Flux.SlipRatio = GetInputParameter(C,'SlipRatio',1);
-Inputs.Bank.Flux.ThetSD = GetInputParameter(C,'ThetSD',0.5);
-Inputs.Bank.Flux.QsBeRatio = GetInputParameter(C,'QsBeRatio');
+Inputs.Bank.Flux.Approach     = GetInputParameter(C,'BankFlux',0);
+Inputs.Bank.Flux.Repose       = GetInputParameter(C,'Repose');
+Inputs.Bank.Flux.SlipRatio    = GetInputParameter(C,'SlipRatio',1);
+Inputs.Bank.Flux.ThetSD       = GetInputParameter(C,'ThetSD',0.5);
+Inputs.Bank.Flux.QsBeRatio    = GetInputParameter(C,'QsBeRatio');
 Inputs.Bank.Flux.BErodibility = GetInputParameter(C,'BErodibility');
 switch Inputs.Bank.Flux.Approach
     case 0 % no additional inputs required
@@ -341,15 +347,15 @@ switch Inputs.Bank.Update.StoredBE
 end
 
 %% Times
-Inputs.Time.dT = GetInputParameter(C,'dT');
+Inputs.Time.dT        = GetInputParameter(C,'dT');
 Inputs.Time.StartTime = GetInputParameter(C,'StartTime',0);
-Inputs.Time.EndTime = GetInputParameter(C,'EndTime');
+Inputs.Time.EndTime   = GetInputParameter(C,'EndTime');
 
 %% Outputs
-Inputs.Outputs.DiagInt = GetInputParameter(C,'DiagInt',Inputs.Time.dT);
-Inputs.Outputs.PlotInt = GetInputParameter(C,'PlotInt',Inputs.Time.dT);
+Inputs.Outputs.DiagInt  = GetInputParameter(C,'DiagInt',Inputs.Time.dT);
+Inputs.Outputs.PlotInt  = GetInputParameter(C,'PlotInt',Inputs.Time.dT);
 Inputs.Outputs.VideoOut = GetInputParameter(C,'VideoOut',0);
-Inputs.Outputs.CsvInt = GetInputParameter(C,'CsvInt',0);
+Inputs.Outputs.CsvInt   = GetInputParameter(C,'CsvInt',0);
 
 end
 

@@ -27,6 +27,8 @@ ItMax     = 50               % Maximum number of iterations for setting WL (defa
 Kappa     = 0.4              % Von Karman Constant (default = 0.4)
 RhoW      = 1000             % Fluid density [kg/m3] (default 1000)
 Gravity   = 9.81             % Gravitational constant [m/s2] (default = 9.81)
+ConstBend = 1                % Option to have constant bend radius (1) or spatially varying bend radius (0). If spatially varying 
+                             % RADIUS relates to the zero chainage of the cross-section. (default = 1).
 
 %% =============================== Sediment ===============================
 SedSize   = 0.027 %SelwynSedFrac.csv % Either numeric D50 for single size [m], or csv file with 3 columns: fraction D50 [m], initial condition SurfaceFi [dimensionless], IC BulkFi [dimensionless]

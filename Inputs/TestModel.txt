@@ -11,6 +11,8 @@ QTol      = 0.00000001       % Tolerance for model flow vs desired flow when set
 Kappa     = 0.41             % Von Karman Constant (default = 0.4)
 RhoW      = 1000             % Fluid density [kg/m3] (default 1000)
 Gravity   = 9.81             % Gravitational constant [m/s2] (default = 9.81)
+ConstBend = 1                % Option to have constant bend radius (1) or spatially varying bend radius (0). If spatially varying 
+                             % RADIUS relates to the zero chainage of the cross-section. (default = 1).
 
 %% =============================== Sediment ===============================
 SedSize   = TestSedFrac.txt  % Either numeric D50 for single size [m], or csv file with 3 columns: fraction D50 [m], initial condition SurfaceFi [dimensionless], IC BulkFi [dimensionless]
