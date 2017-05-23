@@ -18,6 +18,7 @@ function [Tau_N] = SecondaryFlow(HydInputs, Cell)
 %                     .ESpiral = user specified coefficient for spiral
 %                                motion
 %                     .Rho_W   = water density [kg/m3]
+%                     .ConstBend = Option to use constant bend radius [1/0]
 %      Cell      = Struct of cell center properties initialised by
 %                  InitialiseVariables and set in earlier steps of 
 %                  XChannel. Fields of Cell used by SECONDARYFLOW are:
@@ -25,6 +26,7 @@ function [Tau_N] = SecondaryFlow(HydInputs, Cell)
 %                     .Wet    = mask indicating wet cells
 %                     .U      = depth averaged velocity in each cell [m/s]
 %                     .H      = water depth in each cell [m]
+%                     .N      = cell center location, cross-channel dir [m]
 %   
 %   Outputs:
 %      Tau_N     = Transverse shear stress due to secondary currents [N/m2]
@@ -47,8 +49,15 @@ AlphaSpiral(Cell.Wet) = min(sqrt(HydInputs.g) ./ ...
                             (HydInputs.Kappa * Cell.Chezy(Cell.Wet)), 0.5); 
 % Equation 9.156 in Delft3D-FLOW User Manual or Eq8 Kalkwijk & Booij 1986
 
-SpiralIntensity(Cell.Wet) = Cell.H(Cell.Wet) .* Cell.U(Cell.Wet) / ...
-                            HydInputs.Radius; 
+if HydInputs.ConstBend == 1
+    % Costant bend radius
+    SpiralIntensity(Cell.Wet) = Cell.H(Cell.Wet) .* Cell.U(Cell.Wet) / ...
+                                HydInputs.Radius; 
+else
+    % Bend radius varies across section
+    SpiralIntensity(Cell.Wet) = Cell.H(Cell.Wet) .* Cell.U(Cell.Wet) ./ ...
+                                (Cell.N(Cell.Wet) + HydInputs.Radius); 
+end
 % Eq 9.160 in Delft3D-FLOW User Manual (With I=I_be (intensity due to bend)
 % as I_ce (coriolis) is negligable)
 

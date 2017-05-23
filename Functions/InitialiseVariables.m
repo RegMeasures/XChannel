@@ -14,15 +14,20 @@ function [Cell, Edge, Frac, Bank] = InitialiseVariables(Inputs)
 %      Cell = Structure array to hold variables of cell center properties.
 %             The initial fields created to by INITIALISEVARIABLES are:
 %         .NCells   = number of cells across cross-section
-%         .N        = cell center location, cross-channel dir (NCells x 1)
-%         .Width    = cell width (NCells x 1)
-%         .Z        = cell bed elevation (NCells x 1)
-%         .Zinitial = cell initial bed elevation (NCells x 1)
-%         .Zfinal   = observed final bed elevation if supplied (NCells x 1)
-%         .EroStore = Stored bank erosion (only if StoredBE = 1) (NCellsx1)
+%         .N        = cell center location, cross-channel dir [m]
+%                     (NCells x 1)
+%         .Width    = cell width [m] (NCells x 1)
+%         .Z        = cell bed elevation [m] (NCells x 1)
+%         .Zinitial = cell initial bed elevation [m] (NCells x 1)
+%         .Zfinal   = observed final bed elevation if supplied [m]
+%                     (NCells x 1)
+%         .EroStore = Stored bank erosion (only if StoredBE = 1) [m]
+%                     (NCells x 1)
 %         .Wet      = boolean flag for wet cells (NCells x 1)
-%         .U        = depth averaged streamwise velocity in cell (NCellsx1)
-%         .Tau_S    = streamwise bed shear stress in cell (NCells x 1)
+%         .U        = depth averaged streamwise velocity in cell [m/s]
+%                     (NCells x 1) 
+%         .Tau_S    = streamwise bed shear stress in cell [N/m2] 
+%                     (NCells x 1)
 %         .Fi       = proportion of each sediment fraction in acive layer
 %                     of cell (NCells x NFracs)
 %         .BulkFi   = proportion of each sediment fraction in subsurface
